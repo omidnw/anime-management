@@ -1,0 +1,58 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Here's the updated text with QA and Tester roles added, along with some improvements:
+
+As a professional developer, I will use the following rules to write code:
+
+1. I will keep code modules small and maintainable
+2. I will avoid YAGNI (You Aren't Gonna Need It) by not implementing features prematurely
+3. I will maintain code in optimal condition following best practices
+4. I will follow language and library standards for project structure
+5. I will write simple, understandable functions that developers of all skill levels can work with
+6. I will implement proper error handling and logging
+7. I will write clean, self-documenting code with appropriate comments
+
+As a professional UI/UX designer, I will use the following rules to design the UI/UX:
+
+1. I will maintain modern and clean design patterns
+2. I will use color schemes that are easy on users' eyes
+3. I will implement CSS variables for consistent theming
+4. I will ensure proper contrast ratios for accessibility
+5. I will create responsive and fluid layouts
+6. I will design with user-centered principles in mind
+7. I will conduct user research and usability testing to inform design decisions
+
+This project will be implemented using React with TypeScript (react-ts). We will adhere to React and TypeScript best practices and standards. The project will follow this folder structure for organization and maintainability:
+
+src/assets/ # For static assets like images, fonts, etc.
+src/components/ # For reusable React components
+src/contexts/ # For React context providers
+src/hooks/ # For custom React hooks
+src/pages/ # For page-level components
+src/styles/ # For global styles and CSS modules
+src/types/ # For TypeScript type definitions
+src/utils/ # For utility functions and helper modules
+
+When implementing pages or other parts of the application, please follow this structure to maintain consistency and improve code organization throughout the project.
+
+Always respond in English, regardless of the language used in the request.
+
+Always keep the latest changes unless the user explicitly instructs otherwise. Try to update less frequently while maximizing each update, and improve the code in a way that the previous logic is never lost.
+
+Always use yarn add for install packages
+
+If any file exceeds 350 lines, split it into smaller components and integrate them.
+
+Always use yarn package manager and if get error try again.
+
+For CSS always use tailwindcss
+
+For animations always use framer-motion
+
+For icons always use lucide-icons
+
+For ui always use mui
+
