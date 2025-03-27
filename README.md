@@ -68,8 +68,6 @@ Sync your watching data with popular anime tracking platforms:
 
 - MyAnimeList (MAL)
 - Anime-Planet
-- AniList
-- Kitsu
 
 ### Social Features
 
