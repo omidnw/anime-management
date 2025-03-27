@@ -1,4 +1,3 @@
-import React from "react";
 import styled from "@emotion/styled";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "../themes/ThemeProvider";

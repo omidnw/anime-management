@@ -1,10 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import {
-	readTextFile,
-	writeTextFile,
-	exists,
 	BaseDirectory,
-	create,
 } from "@tauri-apps/plugin-fs";
 import { UserAnimeData } from "../types/anime";
 import { animeDatabase } from "./animeDatabase";

@@ -3,7 +3,7 @@ import styled from "@emotion/styled";
 import { useTheme } from "../themes/ThemeProvider";
 import { themes } from "../themes/themes";
 import { X, AlertTriangle } from "lucide-react";
-import { AppError, useError } from "../contexts/ErrorContext";
+import { useError } from "../contexts/ErrorContext";
 import { motion, AnimatePresence } from "framer-motion";
 
 const NotificationContainer = styled(motion.div)<{ theme: any }>`

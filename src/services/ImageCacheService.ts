@@ -1,7 +1,4 @@
-import { invoke } from "@tauri-apps/plugin-tauri";
-import { appDataDir, documentDir, join } from "@tauri-apps/plugin-path";
-import { convertFileSrc } from "@tauri-apps/plugin-tauri";
-
+// Remove unused imports
 // Define types for our cache statistics
 interface CacheStats {
 	sizeInBytes: number;

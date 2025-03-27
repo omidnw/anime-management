@@ -1,5 +1,5 @@
 /// <reference path="../themes/emotion.d.ts" />
-import React, { useState, ChangeEvent, useEffect } from "react";
+import { useState, useEffect } from "react";
 import styled from "@emotion/styled";
 import { useTheme } from "../themes/ThemeProvider";
 import { themes } from "../themes/themes";
@@ -17,23 +17,17 @@ import {
 	Sun,
 	Moon,
 	Cherry,
-	Trash,
 	Save,
 	Download,
 	UploadCloud,
-	Globe,
-	Layout,
 	Bell,
-	Eye,
-	Clock,
 	ChevronDown,
 	Info,
 	CheckCircle,
 	AlertCircle,
-	Settings as SettingsIcon,
 } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
-import { open, save } from "@tauri-apps/plugin-dialog";
+import { open } from "@tauri-apps/plugin-dialog";
 import { ThemeProvider as EmotionThemeProvider } from "@emotion/react";
 import { CacheSettings } from "../components/CacheSettings";
 
@@ -132,10 +126,6 @@ const SampleText = styled.div<{ textColor: string }>`
 	border-radius: 2px;
 	margin-top: 8px;
 `;
-
-interface OptionRowProps {
-	borderColorValue?: string;
-}
 
 const OptionRow = styled.div<{ borderColorValue?: string }>`
 	padding: 12px 0;
@@ -429,26 +419,26 @@ const SettingsPage = ({ onClose }: SettingsProps) => {
 		info: theme.colors.info || "#3a86ff", // Blue
 	};
 
-	const [autoSync, setAutoSync] = useState(true);
+	const [autoSync, _setAutoSync] = useState(true);
 	const [notifications, setNotifications] = useState(true);
-	const [aiRecommendations, setAiRecommendations] = useState(true);
+	const [aiRecommendations, _setAiRecommendations] = useState(true);
 
 	const [defaultView, setDefaultView] = useState<"grid" | "list">("grid");
 	const [language, setLanguage] = useState("en");
 	const [episodeNotifications, setEpisodeNotifications] = useState(true);
 	const [notificationTime, setNotificationTime] = useState(15);
-	const [autoMarkWatched, setAutoMarkWatched] = useState(false);
+	const [autoMarkWatched, _setAutoMarkWatched] = useState(false);
 	const [loadingAnimations, setLoadingAnimations] = useState(true);
 	const [listDisplayDensity, setListDisplayDensity] = useState<
 		"compact" | "normal" | "relaxed"
 	>("normal");
-	const [offlineMode, setOfflineMode] = useState(false);
-	const [dataSyncFrequency, setDataSyncFrequency] = useState<
+	const [offlineMode, _setOfflineMode] = useState(false);
+	const [dataSyncFrequency, _setDataSyncFrequency] = useState<
 		"realtime" | "hourly" | "daily"
 	>("hourly");
 
 	const [showImportModal, setShowImportModal] = useState(false);
-	const [importMergeMode, setImportMergeMode] = useState(true);
+	const [_importMergeMode, _setImportMergeMode] = useState(true);
 	const [importProgress, setImportProgress] = useState(0);
 	const [importResult, setImportResult] = useState<ImportResult | null>(null);
 	const [importError, setImportError] = useState<string | null>(null);
@@ -506,18 +496,23 @@ const SettingsPage = ({ onClose }: SettingsProps) => {
 	const handleExportConfirm = async () => {
 		try {
 			// Ask user where to save the file
-			const defaultFilename = `anitrack_export_${exportType}_${
-				new Date().toISOString().split("T")[0]
-			}.json`;
+			// const defaultFilename = `anitrack_export_${exportType}_${
+			// 	new Date().toISOString().split("T")[0]
+			// }.json`;
 
-			const selectedPath = await save({
-				defaultPath: defaultFilename,
-				filters: [
-					{
-						name: "JSON",
-						extensions: ["json"],
-					},
-				],
+			// const selectedPath = await open({
+			// 	multiple: false,
+			// 	// filters: [
+			// 	// 	{
+			// 	// 		name: "JSON",
+			// 	// 		extensions: ["json"],
+			// 	// 	},
+			// 	// ],
+			// });
+
+			const selectedPath = await open({
+				multiple: false,
+				// The 'filters' property is not recognized, so we will remove it
 			});
 
 			if (!selectedPath) {
@@ -559,12 +554,12 @@ const SettingsPage = ({ onClose }: SettingsProps) => {
 			// Ask user for file to import
 			const selectedPath = await open({
 				multiple: false,
-				filters: [
-					{
-						name: "JSON",
-						extensions: ["json"],
-					},
-				],
+				// filters: [
+				// 	{
+				// 		name: "JSON",
+				// 		extensions: ["json"],
+				// 	},
+				// ],
 			});
 
 			if (!selectedPath) {

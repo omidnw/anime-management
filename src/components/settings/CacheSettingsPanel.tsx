@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Typography, Box, LinearProgress } from "@mui/material";
+import { useState, useEffect } from "react";
+import { Box, LinearProgress } from "@mui/material";
 import { Database, HardDrive, Trash2, RefreshCw } from "lucide-react";
 import { useTheme } from "../../themes/ThemeProvider";
 import { themes } from "../../themes/themes";
@@ -22,7 +22,7 @@ const CacheSettingsPanel: React.FC = () => {
 
 	const [cacheSize, setCacheSize] = useState<string>("0 KB");
 	const [imageCount, setImageCount] = useState<number>(0);
-	const [maxCacheSize, setMaxCacheSize] = useState<number>(500); // In MB
+	const [maxCacheSize, _setMaxCacheSize] = useState<number>(500); // In MB
 	const [autoClearCache, setAutoClearCache] = useState<boolean>(true);
 	const [isClearing, setIsClearing] = useState<boolean>(false);
 	const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -99,10 +99,10 @@ const CacheSettingsPanel: React.FC = () => {
 		}
 	};
 
-	const handleMaxCacheSizeChange = (newSize: number) => {
-		setMaxCacheSize(newSize);
-		// Here you would typically save this setting to persistent storage
-	};
+	// const handleMaxCacheSizeChange = (newSize: number) => {
+	// 	setMaxCacheSize(newSize);
+	// 	// Here you would typically save this setting to persistent storage
+	// };
 
 	return (
 		<SettingsCard theme={theme}>

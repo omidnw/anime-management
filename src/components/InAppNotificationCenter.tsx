@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import styled from "@emotion/styled";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -7,8 +7,6 @@ import {
 	Check,
 	MailOpen,
 	Calendar,
-	Clock,
-	ExternalLink,
 } from "lucide-react";
 import { useTheme } from "../themes/ThemeProvider";
 import { themes } from "../themes/themes";
@@ -19,7 +17,6 @@ import {
 	clearInAppNotifications,
 	InAppNotification,
 } from "../services/notificationService";
-import { Button } from "./ui/Button";
 import { formatRelativeTime } from "../utils/timeUtils";
 
 interface InAppNotificationCenterProps {

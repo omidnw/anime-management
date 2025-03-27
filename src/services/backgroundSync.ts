@@ -21,7 +21,6 @@ export enum SyncEvent {
 const DEFAULT_SYNC_INTERVAL = 15 * 60 * 1000; // 15 minutes
 const MIN_SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 export const SYNC_STATUS_CHECK_INTERVAL = 60 * 1000; // 1 minute
-const RETRY_MAX_ATTEMPTS = 5;
 
 export interface SyncResult {
 	timestamp: number;
@@ -42,8 +41,6 @@ class BackgroundSync {
 	private lastSyncResult: SyncResult | null = null;
 	private events: EventEmitter = new EventEmitter();
 	private pendingChangesCount = 0;
-	private lastSyncAttempt = 0;
-	private retryCount = 0;
 
 	/**
 	 * Initialize the background sync service
@@ -159,16 +156,6 @@ class BackgroundSync {
 
 		// Run an initial check immediately
 		this.checkPendingChanges();
-	}
-
-	/**
-	 * Stop periodic status checks
-	 */
-	private stopStatusCheck(): void {
-		if (this.statusCheckIntervalId !== null) {
-			window.clearInterval(this.statusCheckIntervalId);
-			this.statusCheckIntervalId = null;
-		}
 	}
 
 	/**
@@ -351,46 +338,6 @@ class BackgroundSync {
 			return errorResult;
 		}
 	}
-
-	/**
-	 * Handle connection restored event
-	 */
-	private handleConnectionRestored = async (): Promise<void> => {
-		console.log("Connection restored, checking for pending changes");
-		this.retryCount = 0; // Reset retry count
-		await this.performSync();
-	};
-
-	/**
-	 * Check if there are pending changes and sync if necessary
-	 */
-	private checkAndSync = async (): Promise<void> => {
-		// Don't start a new sync if one is already in progress
-		if (this.isRunning) {
-			return;
-		}
-
-		try {
-			// Check if we're online
-			const isOnline = await networkMonitor.getNetworkStatus();
-			if (!isOnline) {
-				console.log("Skipping background sync: device is offline");
-				return;
-			}
-
-			// Check if there are pending changes
-			const pendingChanges = await getPendingChanges();
-			if (pendingChanges.length === 0) {
-				// No changes to sync
-				return;
-			}
-
-			// Start sync
-			await this.performSync();
-		} catch (error) {
-			console.error("Error checking for pending changes:", error);
-		}
-	};
 }
 
 // Export singleton instance

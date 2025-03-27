@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { jikanApi } from "../services/jikanApi";
 import { animeDatabase } from "../services/animeDatabase";
-import { AnimeData, UserAnimeData } from "../types/anime";
+import { UserAnimeData } from "../types/anime";
 import { useError, handleAppError } from "../contexts/ErrorContext";
 
 export type AnimeSearchFilters = {

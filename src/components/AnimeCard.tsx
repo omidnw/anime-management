@@ -10,21 +10,19 @@ import styled from "@emotion/styled";
 import {
 	Star,
 	BookmarkPlus,
-	BookmarkCheck,
 	PlusCircle,
 	Eye,
 	Loader,
-	Heart,
 	AlertCircle,
 	CheckCircle,
 	Pause,
 	X,
 } from "lucide-react";
-import { AnimeData, UserAnimeData } from "../types/anime";
+import { AnimeData } from "../types/anime";
 import { Card } from "./ui/Card";
 import { useUserAnimeDetails } from "../hooks/useAnime";
 import { useAddAnime } from "../hooks/useAnime";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useTheme } from "../themes/ThemeProvider";
 import { themes } from "../themes/themes";
 import { LazyLoadedImage } from "./LazyLoadedImage";
@@ -177,12 +175,6 @@ const AnimeBadge = styled.span<{ accentColor: string }>`
 	font-size: 12px;
 	font-weight: 600;
 	box-shadow: 0 2px 6px ${(props) => `${props.accentColor || "#1976d2"}20`};
-`;
-
-const ActionButtons = styled.div`
-	display: flex;
-	justify-content: space-between;
-	margin-top: auto;
 `;
 
 const StatusBadge = styled(motion.div)<{ statusColor: string }>`
@@ -364,7 +356,6 @@ const StatusOption = styled.button<{ bgColor: string }>`
 export const AnimeCard = memo(function AnimeCard({
 	anime,
 	onClick,
-	disableHoverEffects = false,
 }: AnimeCardProps) {
 	const { data: userAnimeData, isLoading: isLoadingAnimeDetails } =
 		useUserAnimeDetails(anime.mal_id);
@@ -619,7 +610,7 @@ export const AnimeCard = memo(function AnimeCard({
 			{!userAnimeData && isHovered && !showStatusMenu && (
 				<ActionButtonsOverlay>
 					<IconButton
-						onClick={(e) => setShowStatusMenu(true)}
+						onClick={(_e) => setShowStatusMenu(true)}
 						textColor="white"
 						bgColor={`${theme?.colors?.primary || "#1976d2"}40`}
 						primaryColor={theme?.colors?.primary || "#1976d2"}

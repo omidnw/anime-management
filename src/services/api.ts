@@ -23,9 +23,9 @@ export const API = {
 	): Promise<UserAnimeData[]> => {
 		try {
 			// Check if we're online
-			const { online } = await getNetworkStatus();
+			const onlineStatus = await getNetworkStatus();
 
-			if (online) {
+			if (onlineStatus) {
 				// Online mode: get from database
 				const animeList = await animeDatabase.listUserAnime(status);
 
@@ -78,9 +78,9 @@ export const API = {
 	getUserAnime: async (animeId: number): Promise<UserAnimeData | null> => {
 		try {
 			// Check if we're online
-			const { online } = await getNetworkStatus();
+			const onlineStatus = await getNetworkStatus();
 
-			if (online) {
+			if (onlineStatus) {
 				// Online mode: get from database
 				return animeDatabase.getUserAnime(animeId);
 			} else {
@@ -117,9 +117,9 @@ export const API = {
 	saveUserAnime: async (animeData: UserAnimeData): Promise<UserAnimeData> => {
 		try {
 			// Check if we're online
-			const { online } = await getNetworkStatus();
+			const onlineStatus = await getNetworkStatus();
 
-			if (online) {
+			if (onlineStatus) {
 				// Online mode: save to database
 				const savedAnime = await animeDatabase.addUserAnime(animeData);
 
@@ -192,9 +192,9 @@ export const API = {
 	deleteUserAnime: async (animeId: number): Promise<boolean> => {
 		try {
 			// Check if we're online
-			const { online } = await getNetworkStatus();
+			const onlineStatus = await getNetworkStatus();
 
-			if (online) {
+			if (onlineStatus) {
 				// Online mode: delete from database
 				const success = await animeDatabase.deleteUserAnime(animeId);
 

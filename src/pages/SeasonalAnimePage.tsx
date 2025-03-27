@@ -1,4 +1,4 @@
-import { useState, useEffect, ChangeEvent } from "react";
+import { useState, ChangeEvent } from "react";
 import styled from "@emotion/styled";
 import { useTheme } from "../themes/ThemeProvider";
 import { themes } from "../themes/themes";

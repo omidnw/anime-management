@@ -32,7 +32,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
 	const [hoveredAnime, setHoveredAnime] = useState<number | null>(null);
 	const timelineRef = useRef<HTMLDivElement>(null);
 	const [isDataReady, setIsDataReady] = useState(false);
-	const [currentTimePosition, setCurrentTimePosition] = useState<number | null>(
+	const [_currentTimePosition, setCurrentTimePosition] = useState<number | null>(
 		null
 	);
 
@@ -63,7 +63,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
 
 	const currentDay = getCurrentDay();
 	const currentHour = new Date().getHours();
-	const currentMinute = new Date().getMinutes();
+	// const currentMinute = new Date().getMinutes();
 
 	// Calculate visible days
 	const visibleDays = useMemo(() => {
@@ -160,12 +160,12 @@ const TimelineView: React.FC<TimelineViewProps> = ({
 	};
 
 	// Helper to calculate position within a time slot (in minutes)
-	const getAnimePositionInSlot = (anime: AnimeData): number => {
-		if (!anime.broadcast?.time) return 0;
+	// const getAnimePositionInSlot = (anime: AnimeData): number => {
+	// 	if (!anime.broadcast?.time) return 0;
 
-		const [_, minutesStr] = anime.broadcast.time.split(":");
-		return parseInt(minutesStr, 10) || 0;
-	};
+	// 	const [_, minutesStr] = anime.broadcast.time.split(":");
+	// 	return parseInt(minutesStr, 10) || 0;
+	// };
 
 	return (
 		<Container>

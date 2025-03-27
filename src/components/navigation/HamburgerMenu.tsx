@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import styled from "@emotion/styled";
 import { X, Menu as MenuIcon } from "lucide-react";
-import { NavItem, standardNavItems } from "./StandardMenuBar";
+import { standardNavItems } from "./StandardMenuBar";
 import { AppTheme } from "../../themes/themeTypes";
 import { motion, AnimatePresence } from "framer-motion";
 

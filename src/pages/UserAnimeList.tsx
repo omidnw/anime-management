@@ -19,7 +19,6 @@ import { UserAnimeData } from "../types/anime";
 import { jikanApi } from "../services/jikanApi";
 import { useQueries } from "@tanstack/react-query";
 import FilterErrors from "../components/FilterErrors";
-import { useError, handleAppError } from "../contexts/ErrorContext";
 import { SearchInput } from "../components/ui/SearchInput";
 
 type ViewMode = "list" | "grid";
@@ -348,7 +347,6 @@ export function UserAnimeList({ onAnimeSelect }: UserAnimeListProps) {
 	const [sortField, setSortField] = useState<SortField>("none");
 	const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 	const deleteAnimeMutation = useDeleteAnime();
-	const { error, setError } = useError();
 	const [filterError, setFilterError] = useState<{
 		code: string;
 		message: string;
@@ -385,15 +383,6 @@ export function UserAnimeList({ onAnimeSelect }: UserAnimeListProps) {
 		});
 	}, [filteredAnimeList, sortField, sortDirection]);
 
-	// Add debugging logs
-	console.log("Selected status:", selectedStatus);
-	console.log("Search query:", searchQuery);
-	console.log("Sort field:", sortField);
-	console.log("Sort direction:", sortDirection);
-	console.log("User anime list:", userAnimeList);
-	console.log("Filtered anime list:", filteredAnimeList);
-	console.log("Sorted anime list:", sortedAnimeList);
-
 	// Fetch anime details for each user anime
 	const animeQueries = useQueries({
 		queries:
@@ -414,25 +403,23 @@ export function UserAnimeList({ onAnimeSelect }: UserAnimeListProps) {
 				code: "FILTER_ERROR",
 				message: `Failed to load anime with status "${selectedStatus}". Please try again or choose a different filter.`,
 			});
-			// Also log to the global error system for debugging
-			setError(handleAppError(queryError, "FILTER_ERROR"));
 		} else {
 			setFilterError(null);
 		}
-	}, [queryError, selectedStatus, setError]);
+	}, [queryError, selectedStatus]);
 
 	const getStatusColor = (status: string): string => {
 		switch (status) {
 			case "watching":
 				return theme.colors.primary;
 			case "completed":
-				return theme.colors.success;
+				return theme.colors.success || "#000000";
 			case "plan_to_watch":
-				return theme.colors.accent;
+				return theme.colors.accent || "#000000";
 			case "on_hold":
-				return theme.colors.warning;
+				return theme.colors.warning || "#000000";
 			case "dropped":
-				return theme.colors.error;
+				return theme.colors.error || "#000000";
 			default:
 				return theme.colors.primary;
 		}
@@ -507,7 +494,7 @@ export function UserAnimeList({ onAnimeSelect }: UserAnimeListProps) {
 		deleteButton.style.padding = "8px 16px";
 		deleteButton.style.border = "none";
 		deleteButton.style.borderRadius = "4px";
-		deleteButton.style.backgroundColor = theme.colors.error;
+		deleteButton.style.backgroundColor = theme.colors.error || "#000000";
 		deleteButton.style.color = "white";
 		deleteButton.style.cursor = "pointer";
 		deleteButton.style.fontSize = "14px";

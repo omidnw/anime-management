@@ -1,7 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { setupNetworkListener, isOnline } from "../utils/network";
+import { createContext, useContext, useState, useEffect } from "react";
+import { isOnline } from "../utils/network";
 import {
-	initOfflineStorage,
 	getNetworkStatus,
 	getPendingChanges,
 } from "../services/offlineStorage";
@@ -11,7 +10,7 @@ import {
 	SyncResult,
 } from "../services/backgroundSync";
 import { networkMonitor, NetworkEvent } from "../services/networkMonitor";
-import { format } from "date-fns";
+// import { format } from "date-fns";
 import { formatDistanceToNow } from "date-fns";
 
 // Define the context type
@@ -60,7 +59,7 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({
 	const [isPendingSyncInProgress, setIsPendingSyncInProgress] = useState(false);
 	const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
 	const [lastSyncResult, setLastSyncResult] = useState<SyncResult | null>(null);
-	const [isInitialized, setIsInitialized] = useState(false);
+	const [_isInitialized, setIsInitialized] = useState(false);
 
 	// Initialize offline storage and network status
 	useEffect(() => {

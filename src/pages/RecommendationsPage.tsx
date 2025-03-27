@@ -147,7 +147,6 @@ export function RecommendationsPage({
 	const {
 		data: recommendationsData,
 		isLoading: isLoadingRecommendations,
-		error,
 		refetch: refetchRecommendations,
 	} = usePersonalizedRecommendations();
 
@@ -159,7 +158,7 @@ export function RecommendationsPage({
 		generationDetail,
 		generateRecommendations,
 		clearRecommendations,
-		resetGenerationState,
+		// resetGenerationState,
 		hasRecommendations,
 	} = useAIRecommendations();
 
@@ -260,11 +259,11 @@ export function RecommendationsPage({
 	}, [selectedAnimeIds, userAnimeList]);
 
 	// Reset to default recommendations
-	const resetToDefaultRecommendations = useCallback(() => {
-		setIsCustomSelection(false);
-		setSelectedAnimeIds([]);
-		refetchRecommendations();
-	}, [refetchRecommendations]);
+	// const resetToDefaultRecommendations = useCallback(() => {
+	// 	setIsCustomSelection(false);
+	// 	setSelectedAnimeIds([]);
+	// 	refetchRecommendations();
+	// }, [refetchRecommendations]);
 
 	// Toggle between classic and AI recommendations
 	const toggleAIMode = useCallback(() => {

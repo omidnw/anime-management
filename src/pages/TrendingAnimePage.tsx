@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import styled from "@emotion/styled";
 import { useTheme } from "../themes/ThemeProvider";
 import { themes } from "../themes/themes";
@@ -25,7 +25,7 @@ type SortFilter = "rank" | "score" | "popularity" | "favorites" | "members";
 
 export function TrendingAnimePage({
 	onAnimeSelect,
-	onNavigate,
+	// onNavigate,
 }: TrendingAnimePageProps) {
 	const { currentTheme } = useTheme();
 	const theme = themes[currentTheme];

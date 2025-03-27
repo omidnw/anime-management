@@ -3,9 +3,7 @@ import styled from "@emotion/styled";
 import { useTheme } from "../../themes/ThemeProvider";
 import { themes } from "../../themes/themes";
 import { Button } from "../ui/Button";
-import { AppTheme } from "../../themes/themeTypes";
 import { Sun, Moon, Cherry } from "lucide-react";
-import { Box, Typography } from "@mui/material";
 import { SettingsCard, SectionTitle } from "./SettingsStyles";
 
 // Define interface for theme preview props

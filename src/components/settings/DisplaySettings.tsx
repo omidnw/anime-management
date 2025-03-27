@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { Box, Typography } from "@mui/material";
+import { useState } from "react";
 import { useTheme } from "../../themes/ThemeProvider";
 import { themes } from "../../themes/themes";
 import {
@@ -15,7 +14,7 @@ import {
 	SettingsCard,
 	SectionTitle,
 } from "./SettingsStyles";
-import { LayoutDashboard, Eye, Layers } from "lucide-react";
+import { LayoutDashboard } from "lucide-react";
 
 const DisplaySettings: React.FC = () => {
 	const { currentTheme } = useTheme();

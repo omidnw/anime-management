@@ -8,13 +8,11 @@ import {
 	Moon,
 	Cherry,
 	Settings as SettingsIcon,
-	Layout,
 	Menu as MenuIcon,
 } from "lucide-react";
 import { Button } from "./components/ui/Button";
 import { useTheme } from "./themes/ThemeProvider";
 import { themes } from "./themes/themes";
-import { AppTheme } from "./themes/themeTypes";
 import { AnimeDetail } from "./pages/AnimeDetail";
 import { UserAnimeList } from "./pages/UserAnimeList";
 import { SearchPage } from "./pages/SearchPage";
@@ -155,11 +153,11 @@ function MainContent() {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 
 	// Toggle menu type directly without page reload
-	const toggleMenuType = () => {
-		const newType = menuDisplayType === "standard" ? "hamburger" : "standard";
-		setMenuDisplayType(newType);
-		localStorage.setItem("menuDisplayType", newType);
-	};
+	// const toggleMenuType = () => {
+	// 	const newType = menuDisplayType === "standard" ? "hamburger" : "standard";
+	// 	setMenuDisplayType(newType);
+	// 	localStorage.setItem("menuDisplayType", newType);
+	// };
 
 	// Toggle hamburger menu open/closed
 	const toggleMenu = () => {

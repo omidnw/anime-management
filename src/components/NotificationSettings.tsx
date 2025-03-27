@@ -1,14 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import styled from "@emotion/styled";
 import { motion } from "framer-motion";
-import {
-	BellRing,
-	Clock,
-	Heart,
-	Volume2,
-	Monitor,
-	BellDot,
-} from "lucide-react";
+import { BellRing, Clock, Heart, Volume2, BellDot } from "lucide-react";
 import { Button } from "./ui/Button";
 import { Switch } from "./ui/Switch";
 import { useTheme } from "../themes/ThemeProvider";
@@ -177,7 +170,14 @@ export function NotificationSettings({ onSave }: NotificationSettingsProps) {
 						<RadioGroup
 							options={deliveryOptions}
 							value={settings.notificationDelivery || "both"}
-							onChange={(value) => updateSetting("notificationDelivery", value)}
+							onChange={(value) => {
+								if (["system", "app", "both"].includes(value)) {
+									updateSetting(
+										"notificationDelivery",
+										value as "system" | "app" | "both"
+									);
+								}
+							}}
 							name="notificationDelivery"
 							disabled={!hasPermission || !settings.enableReleaseReminders}
 							horizontal={true}

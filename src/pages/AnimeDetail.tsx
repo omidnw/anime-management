@@ -15,8 +15,6 @@ import {
 	Star,
 	Calendar,
 	Clock,
-	Edit,
-	Share2,
 	Heart,
 	Play,
 	Loader,

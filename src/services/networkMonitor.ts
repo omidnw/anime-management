@@ -11,10 +11,10 @@ export enum NetworkEvent {
 
 // Configuration
 const PING_INTERVAL = 30000; // 30 seconds
-const PING_ENDPOINT = "https://api.jikan.moe/v4"; // Use anime API as ping endpoint
+// const PING_ENDPOINT = "https://api.jikan.moe/v4"; // Use anime API as ping endpoint
 
 class NetworkMonitor {
-	private emitter = new EventEmitter<NetworkEvent>();
+	private emitter = new EventEmitter(); // Removed type argument
 	private isInitialized = false;
 	private currentStatus = true; // Assume online initially
 	private pingInterval: number | null = null;
@@ -114,7 +114,7 @@ class NetworkMonitor {
 	 */
 	private async checkAndUpdateStatus(): Promise<void> {
 		try {
-			const status = await checkOnline(PING_ENDPOINT);
+			const status = await checkOnline();
 			await this.handleStatusChange(status);
 		} catch (error) {
 			console.error("Error checking network status:", error);

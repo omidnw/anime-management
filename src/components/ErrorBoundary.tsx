@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from "react";
+import { Component, ErrorInfo, ReactNode } from "react";
 import { useTheme } from "../themes/ThemeProvider";
 import { themes } from "../themes/themes";
 import { AppError } from "../contexts/ErrorContext";

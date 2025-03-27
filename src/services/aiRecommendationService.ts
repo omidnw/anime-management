@@ -70,8 +70,8 @@ async function extractFeatures(animeId: number): Promise<AnimeFeatures | null> {
 			demographics: data.demographics.map((d: any) => d.name),
 			studios: data.studios.map((s: any) => s.name),
 			year: data.aired.prop.from.year,
-			score: data.score,
-			type: data.type,
+			score: data.score || 0,
+			type: data.type || "",
 		};
 
 		// Add special tags based on anime characteristics
@@ -150,7 +150,7 @@ export async function generateAIRecommendations(
 	progressCallback: (stage: string, progress: number, detail?: string) => void
 ): Promise<AIRecommendationResult> {
 	const startTime = Date.now();
-	let progress = 0;
+	// let progress = 0;
 
 	// Simulate initialization
 	progressCallback("Initializing AI engine", 5);

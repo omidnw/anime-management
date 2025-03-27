@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, memo } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 import styled from "@emotion/styled";
 import { motion } from "framer-motion";
 import { imageCacheService } from "../services/ImageCacheService";

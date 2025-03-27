@@ -1,4 +1,3 @@
-import { useState, useCallback } from "react";
 import styled from "@emotion/styled";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -240,7 +239,6 @@ interface RecommendationPageHeaderProps {
 export function RecommendationPageHeader({
 	useAIMode,
 	toggleAIMode,
-	isCustomSelection,
 	selectedAnimeIds,
 	userAnimeList,
 	showSelectionPanel,

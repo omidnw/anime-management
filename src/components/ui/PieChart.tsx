@@ -150,7 +150,6 @@ export function PieChart({
 	data,
 	size = 200,
 	showLabels = true,
-	animate = true,
 	className,
 }: PieChartProps) {
 	const { currentTheme } = useTheme();

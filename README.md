@@ -114,6 +114,29 @@ yarn tauri build
 
 This will generate platform-specific installers in the `src-tauri/target/release/bundle` directory.
 
+## Automated Builds
+
+This project uses GitHub Actions for automated builds on multiple platforms.
+
+### Release Workflow
+
+When pushing a new tag with a version number (e.g., `v1.0.0`), the GitHub Actions workflow will automatically:
+
+1. Build desktop applications for:
+
+   - Windows
+   - macOS (Universal Binary)
+   - Linux
+
+2. Build mobile applications for:
+
+   - Android (APK)
+   - iOS (IPA)
+
+3. Create a draft release with all build artifacts attached
+
+For detailed information about the CI/CD process and how to configure the necessary secrets for iOS and Android builds, see the [GitHub Workflows README](.github/README.md).
+
 ## Recommended IDE Setup
 
 - [VS Code](https://code.visualstudio.com/) with the following extensions:

@@ -104,11 +104,11 @@ const StatFooter = styled.div`
 	color: ${(props) => props.color};
 `;
 
-const ChartContainer = styled.div`
-	width: 100%;
-	height: 200px;
-	margin-top: 20px;
-`;
+// const ChartContainer = styled.div`
+// 	width: 100%;
+// 	height: 200px;
+// 	margin-top: 20px;
+// `;
 
 const ProgressBar = styled.div<{ width: string; color: string }>`
 	height: 8px;
@@ -271,7 +271,7 @@ const Stat = ({
 	</StatCard>
 );
 
-export function StatsDashboard({ onBack }: StatsDashboardProps) {
+export function StatsDashboard({}: StatsDashboardProps) {
 	const { currentTheme } = useTheme();
 	const theme = themes[currentTheme];
 	const { data: animeList, isLoading } = useUserAnimeList();
@@ -305,15 +305,15 @@ export function StatsDashboard({ onBack }: StatsDashboardProps) {
 			case "watching":
 				return theme.colors.primary;
 			case "completed":
-				return theme.colors.success;
+				return theme.colors.success || "#000000";
 			case "plan_to_watch":
-				return theme.colors.accent;
+				return theme.colors.accent || "#000000";
 			case "on_hold":
-				return theme.colors.warning;
+				return theme.colors.warning || "#000000";
 			case "dropped":
-				return theme.colors.error;
+				return theme.colors.error || "#000000";
 			default:
-				return theme.colors.primary;
+				return theme.colors.primary || "#000000";
 		}
 	};
 

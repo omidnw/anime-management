@@ -7,7 +7,6 @@ import {
 } from "react";
 import { ThemeMode } from "./themeTypes";
 import { themes } from "./themes";
-import styled from "@emotion/styled";
 import { Global, css } from "@emotion/react";
 
 interface ThemeContextType {

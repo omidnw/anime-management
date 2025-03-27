@@ -1,6 +1,5 @@
-import { useState } from "react";
 import styled from "@emotion/styled";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Button } from "../../../../components/ui/Button";
 import { Card } from "../../../../components/ui/Card";
 import { AppTheme } from "../../../../themes/themeTypes";
@@ -8,7 +7,6 @@ import { UserAnimeData } from "../../../../types/anime";
 import {
 	BookmarkCheck,
 	Heart,
-	HeartOff,
 	Minus,
 	Plus,
 	Star,

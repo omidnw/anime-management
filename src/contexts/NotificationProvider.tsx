@@ -4,8 +4,8 @@ import {
 	requestPermission,
 	sendNotification,
 } from "@tauri-apps/plugin-notification";
-import { useTheme } from "../themes/ThemeProvider";
-import { themes } from "../themes/themes";
+// import { useTheme } from "../themes/ThemeProvider";
+// import { themes } from "../themes/themes";
 
 // Our simplified notification options
 interface NotificationOptions {
@@ -42,8 +42,8 @@ interface NotificationProviderProps {
 export function NotificationProvider({ children }: NotificationProviderProps) {
 	const [permission, setPermission] =
 		useState<NotificationPermission>("default");
-	const { currentTheme } = useTheme();
-	const theme = themes[currentTheme];
+	// const { currentTheme } = useTheme();
+	// const theme = themes[currentTheme];
 
 	// Check permission on mount
 	useEffect(() => {

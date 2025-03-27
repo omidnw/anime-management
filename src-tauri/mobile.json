@@ -1,0 +1,32 @@
+{
+	"app": {
+		"android": {
+			"files": {
+				"gradle-properties": "src-tauri/gen/android/gradle.properties",
+				"gradle-settings": "src-tauri/gen/android/settings.gradle",
+				"main-activity": "src-tauri/gen/android/app/src/main/java/com/anitrack/app/MainActivity.kt",
+				"gradle-wrapper-properties": "src-tauri/gen/android/gradle/wrapper/gradle-wrapper.properties"
+			},
+			"assets": [],
+			"applicationIdSuffix": null,
+			"icon": null,
+			"manifest": null,
+			"appendGradleProperties": {
+				"android.enableJetifier": "true"
+			},
+			"kotlinVersion": "1.8.10",
+			"gradleVersion": "8.0.0",
+			"tauriGradleVersion": "0.1.0-beta.0"
+		},
+		"ios": {
+			"files": {
+				"Info.plist": "src-tauri/gen/apple/ios/Info.plist"
+			},
+			"assets": [],
+			"bundleIdentifier": null,
+			"developmentTeam": null,
+			"icon": null,
+			"requiresFullScreen": true
+		}
+	}
+}

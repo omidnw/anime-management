@@ -1,8 +1,6 @@
-import { forwardRef, useState } from "react";
+import { forwardRef } from "react";
 import styled from "@emotion/styled";
 import {
-	Play,
-	CheckCircle,
 	Trash2,
 	Star,
 	BookmarkPlus,
@@ -209,22 +207,22 @@ export function AnimeListCard({ anime, onClick }: AnimeListCardProps) {
 		}
 	};
 
-	const handleMarkAsCompleted = async (e: React.MouseEvent) => {
-		e.preventDefault();
-		e.stopPropagation();
+	// const handleMarkAsCompleted = async (e: React.MouseEvent) => {
+	// 	e.preventDefault();
+	// 	e.stopPropagation();
 
-		try {
-			await addAnimeMutation.mutate({
-				anime_id: anime.mal_id,
-				status: "completed",
-				image_url: anime.images.jpg.image_url,
-				title: anime.title,
-			});
-			console.log("Marked as completed");
-		} catch (error) {
-			console.error("Error updating status:", error);
-		}
-	};
+	// 	try {
+	// 		await addAnimeMutation.mutate({
+	// 			anime_id: anime.mal_id,
+	// 			status: "completed",
+	// 			image_url: anime.images.jpg.image_url,
+	// 			title: anime.title,
+	// 		});
+	// 		console.log("Marked as completed");
+	// 	} catch (error) {
+	// 		console.error("Error updating status:", error);
+	// 	}
+	// };
 
 	const handleDeleteAnime = (e: React.MouseEvent) => {
 		e.stopPropagation();
@@ -286,7 +284,7 @@ export function AnimeListCard({ anime, onClick }: AnimeListCardProps) {
 		deleteButton.style.padding = "8px 16px";
 		deleteButton.style.border = "none";
 		deleteButton.style.borderRadius = "4px";
-		deleteButton.style.backgroundColor = theme.colors.error;
+		deleteButton.style.backgroundColor = theme.colors.error || "#FF0000";
 		deleteButton.style.color = "white";
 		deleteButton.style.cursor = "pointer";
 		deleteButton.style.fontSize = "14px";
