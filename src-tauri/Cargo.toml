@@ -2,8 +2,9 @@
 name = "anitrack"
 version = "1.0.0"
 description = "A Tauri App"
-authors = ["you"]
+authors = ["Omid Reza Keshtkar"]
 edition = "2021"
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
