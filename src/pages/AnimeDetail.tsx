@@ -19,6 +19,7 @@ import {
 	Share2,
 	Heart,
 	Play,
+	Loader,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -74,8 +75,8 @@ const AnimeHeader = styled(motion.div)<{
 	background: ${(props) =>
 		props.isFavorite
 			? `linear-gradient(135deg, 
-		${props.theme.colors.primary}10,
-		${props.theme.colors.accent}30)`
+		${props.theme.colors?.primary || "#1976d2"}10,
+		${props.theme.colors?.secondary || "#9c27b0"}30)`
 			: "transparent"};
 	border-radius: 12px;
 	padding: ${(props) => (props.isFavorite ? "24px" : "0")};
@@ -199,8 +200,8 @@ const GenresList = styled(motion.div)`
 `;
 
 const GenreBadge = styled(motion.span)<{ theme: AppTheme }>`
-	background-color: ${(props) => props.theme.colors.accent}20;
-	color: ${(props) => props.theme.colors.accent};
+	background-color: ${(props) => props.theme.colors?.secondary || "#9c27b0"}20;
+	color: ${(props) => props.theme.colors?.secondary || "#9c27b0"};
 	padding: 4px 12px;
 	border-radius: 20px;
 	font-size: 12px;
@@ -209,7 +210,8 @@ const GenreBadge = styled(motion.span)<{ theme: AppTheme }>`
 	transition: all 0.2s ease;
 
 	&:hover {
-		background-color: ${(props) => props.theme.colors.accent}40;
+		background-color: ${(props) =>
+			props.theme.colors?.secondary || "#9c27b0"}40;
 		transform: scale(1.05);
 	}
 `;
@@ -294,14 +296,45 @@ const itemVariants = {
 	},
 };
 
+const LoadingOverlay = styled.div`
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: rgba(0, 0, 0, 0.6);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 100;
+`;
+
+const RotatingLoader = styled(Loader)`
+	animation: spin 1s linear infinite;
+	color: white;
+	width: 48px;
+	height: 48px;
+
+	@keyframes spin {
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
+	}
+`;
+
 export function AnimeDetail({ animeId, onBack }: AnimeDetailProps) {
 	const { currentTheme } = useTheme();
 	const theme = themes[currentTheme];
 
 	const { data: animeData, isLoading: isLoadingAnime } =
 		useAnimeDetails(animeId);
-	const { data: userAnimeData } = useUserAnimeDetails(animeId);
+	const { data: userAnimeData, isLoading: isLoadingUserAnime } =
+		useUserAnimeDetails(animeId);
 	const addAnimeMutation = useAddAnime();
+	const [isSaving, setIsSaving] = useState(false);
 
 	const [userAnime, setUserAnime] = useState<UserAnimeData>({
 		anime_id: animeId,
@@ -322,51 +355,79 @@ export function AnimeDetail({ animeId, onBack }: AnimeDetailProps) {
 		}
 	}, [userAnimeData]);
 
-	const handleUpdateStatus = (status: UserAnimeData["status"]) => {
+	const handleUpdateStatus = async (status: UserAnimeData["status"]) => {
 		if (!animeData || !animeData.data) return;
 
-		const updatedAnime = {
-			anime_id: animeId,
-			status,
-			score: userAnimeData?.score || 0,
-			progress: userAnimeData?.progress || 0,
-			notes: userAnimeData?.notes || "",
-			favorite: userAnimeData?.favorite || true,
-			start_date:
-				status === "watching"
-					? new Date().toISOString()
-					: userAnimeData?.start_date || null,
-			end_date:
-				status === "completed"
-					? new Date().toISOString()
-					: userAnimeData?.end_date || null,
-			image_url: animeData.data.images.jpg.image_url,
-			title: animeData.data.title,
-		};
-		setUserAnime(updatedAnime);
-		addAnimeMutation.mutate(updatedAnime);
+		try {
+			setIsSaving(true);
+			const updatedAnime = {
+				anime_id: animeId,
+				status,
+				score: userAnimeData?.score || 0,
+				progress: userAnimeData?.progress || 0,
+				notes: userAnimeData?.notes || "",
+				favorite: userAnimeData?.favorite || true,
+				start_date:
+					status === "watching"
+						? new Date().toISOString()
+						: userAnimeData?.start_date || null,
+				end_date:
+					status === "completed"
+						? new Date().toISOString()
+						: userAnimeData?.end_date || null,
+				image_url: animeData.data.images.jpg.image_url,
+				title: animeData.data.title,
+			};
+			setUserAnime(updatedAnime);
+			await addAnimeMutation.mutate(updatedAnime);
+		} catch (error) {
+			console.error("Failed to update status:", error);
+		} finally {
+			setIsSaving(false);
+		}
 	};
 
-	const handleSaveChanges = () => {
-		addAnimeMutation.mutate(userAnime);
+	const handleSaveChanges = async () => {
+		try {
+			setIsSaving(true);
+			await addAnimeMutation.mutate(userAnime);
+		} catch (error) {
+			console.error("Failed to save changes:", error);
+		} finally {
+			setIsSaving(false);
+		}
 	};
 
-	const handleScoreChange = (score: number) => {
-		const updatedAnime = {
-			...userAnime,
-			score,
-		};
-		setUserAnime(updatedAnime);
-		addAnimeMutation.mutate(updatedAnime);
+	const handleScoreChange = async (score: number) => {
+		try {
+			setIsSaving(true);
+			const updatedAnime = {
+				...userAnime,
+				score,
+			};
+			setUserAnime(updatedAnime);
+			await addAnimeMutation.mutate(updatedAnime);
+		} catch (error) {
+			console.error("Failed to update score:", error);
+		} finally {
+			setIsSaving(false);
+		}
 	};
 
-	const handleProgressChange = (progress: number) => {
-		const updatedAnime = {
-			...userAnime,
-			progress,
-		};
-		setUserAnime(updatedAnime);
-		addAnimeMutation.mutate(updatedAnime);
+	const handleProgressChange = async (progress: number) => {
+		try {
+			setIsSaving(true);
+			const updatedAnime = {
+				...userAnime,
+				progress,
+			};
+			setUserAnime(updatedAnime);
+			await addAnimeMutation.mutate(updatedAnime);
+		} catch (error) {
+			console.error("Failed to update progress:", error);
+		} finally {
+			setIsSaving(false);
+		}
 	};
 
 	const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -376,13 +437,20 @@ export function AnimeDetail({ animeId, onBack }: AnimeDetailProps) {
 		});
 	};
 
-	const handleToggleFavorite = () => {
-		const updatedAnime = {
-			...userAnime,
-			favorite: !userAnime.favorite,
-		};
-		setUserAnime(updatedAnime);
-		addAnimeMutation.mutate(updatedAnime);
+	const handleToggleFavorite = async () => {
+		try {
+			setIsSaving(true);
+			const updatedAnime = {
+				...userAnime,
+				favorite: !userAnime.favorite,
+			};
+			setUserAnime(updatedAnime);
+			await addAnimeMutation.mutate(updatedAnime);
+		} catch (error) {
+			console.error("Failed to toggle favorite:", error);
+		} finally {
+			setIsSaving(false);
+		}
 	};
 
 	if (isLoadingAnime) {
@@ -423,10 +491,19 @@ export function AnimeDetail({ animeId, onBack }: AnimeDetailProps) {
 	return (
 		<MotionContainer
 			variants={containerVariants}
-			initial="hidden"
+			initial="visible"
 			animate="visible"
 			exit={{ opacity: 0 }}
 		>
+			{(isLoadingAnime ||
+				isLoadingUserAnime ||
+				isSaving ||
+				addAnimeMutation.isPending) && (
+				<LoadingOverlay>
+					<RotatingLoader size={48} />
+				</LoadingOverlay>
+			)}
+
 			<motion.div variants={itemVariants}>
 				<BackButton
 					variant="outline"

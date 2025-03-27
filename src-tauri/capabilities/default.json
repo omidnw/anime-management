@@ -2,9 +2,18 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for the main window",
-  "windows": ["main"],
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "core:default",
-    "opener:default"
+    "opener:default",
+    "dialog:default",
+    "fs:default",
+    "shell:default",
+    "notification:default",
+    "notification:default",
+    "notification:default",
+    "fs:default"
   ]
 }

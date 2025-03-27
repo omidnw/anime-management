@@ -44,8 +44,9 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
 
 	const globalStyles = css`
 		body {
-			background-color: ${themes[currentTheme].colors.background};
-			color: ${themes[currentTheme].colors.text};
+			background-color: ${themes[currentTheme]?.colors?.background ||
+			"#121212"};
+			color: ${themes[currentTheme]?.colors?.text || "#ffffff"};
 			font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
 				Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
 				sans-serif;

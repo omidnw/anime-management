@@ -4,10 +4,34 @@ import { animeDatabase } from "../services/animeDatabase";
 import { AnimeData, UserAnimeData } from "../types/anime";
 import { useError, handleAppError } from "../contexts/ErrorContext";
 
-export function useAnimeSearch(query: string, page = 1, enabled = true) {
+export type AnimeSearchFilters = {
+	type?: "tv" | "movie" | "ova" | "special" | "ona" | "music";
+	status?: "airing" | "complete" | "upcoming";
+	rating?: "g" | "pg" | "pg13" | "r17" | "r" | "rx";
+	genres?: number[];
+	min_score?: number;
+	max_score?: number;
+	order_by?:
+		| "title"
+		| "start_date"
+		| "end_date"
+		| "score"
+		| "rank"
+		| "popularity"
+		| "members"
+		| "favorites";
+	sort?: "desc" | "asc";
+};
+
+export function useAnimeSearch(
+	query: string,
+	page = 1,
+	enabled = true,
+	filters?: AnimeSearchFilters
+) {
 	return useQuery({
-		queryKey: ["animeSearch", query, page],
-		queryFn: () => jikanApi.searchAnime(query, page),
+		queryKey: ["animeSearch", query, page, filters],
+		queryFn: () => jikanApi.searchAnime(query, page, 25, filters),
 		enabled: enabled && query.length > 0,
 		staleTime: 5 * 60 * 1000, // 5 minutes
 	});
@@ -159,5 +183,130 @@ export function useDeleteAnime() {
 			console.error(`Error deleting anime ID ${animeId}:`, error);
 			setError(handleAppError(error, "DELETE_ANIME_ERROR"));
 		},
+	});
+}
+
+export function useAnimeRecommendations(animeId: number) {
+	return useQuery({
+		queryKey: ["animeRecommendations", animeId],
+		queryFn: () => jikanApi.getAnimeRecommendations(animeId),
+		enabled: !!animeId,
+		staleTime: 24 * 60 * 60 * 1000, // 24 hours - recommendations don't change often
+	});
+}
+
+interface RecommendationEntry {
+	entry: {
+		mal_id: number;
+		title: string;
+		images: {
+			jpg: {
+				image_url: string;
+			};
+		};
+	};
+	votes: number;
+}
+
+export function usePersonalizedRecommendations() {
+	const { data: userAnimeList } = useUserAnimeList();
+	const { setError } = useError();
+
+	return useQuery({
+		queryKey: ["personalizedRecommendations"],
+		queryFn: async () => {
+			try {
+				if (!userAnimeList || userAnimeList.length === 0) {
+					return { data: [], sourceAnime: [] };
+				}
+
+				// Find anime with high scores (7 or above)
+				const favoriteAnime: UserAnimeData[] = userAnimeList.filter(
+					(anime) => anime.score >= 7
+				);
+
+				if (favoriteAnime.length === 0) {
+					// If no high-rated anime, use anime marked as favorite
+					const markedFavorites = userAnimeList.filter(
+						(anime) => anime.favorite
+					);
+
+					if (markedFavorites.length === 0) {
+						// If no favorites, use completed anime
+						const completed = userAnimeList.filter(
+							(anime) => anime.status === "completed"
+						);
+
+						if (completed.length === 0) {
+							// If nothing else, use first 3 anime in the list
+							favoriteAnime.push(...userAnimeList.slice(0, 3));
+						} else {
+							favoriteAnime.push(...completed.slice(0, 3));
+						}
+					} else {
+						favoriteAnime.push(...markedFavorites.slice(0, 3));
+					}
+				}
+
+				// Get recommendations for up to 3 favorite anime
+				const sampleAnime = favoriteAnime.slice(0, 3);
+
+				// Get recommendations for each anime in parallel
+				const recommendationsPromises = sampleAnime.map((anime) =>
+					jikanApi.getAnimeRecommendations(anime.anime_id)
+				);
+
+				const recommendationsResults = await Promise.allSettled(
+					recommendationsPromises
+				);
+
+				// Process results, handle any errors
+				const allRecommendations = recommendationsResults
+					.filter(
+						(result): result is PromiseFulfilledResult<any> =>
+							result.status === "fulfilled"
+					)
+					.map((result) => result.value.data)
+					.flat();
+
+				// Filter out anime the user already has in their list
+				const userAnimeIds = new Set(
+					userAnimeList.map((anime) => anime.anime_id)
+				);
+
+				const filteredRecommendations = allRecommendations.filter(
+					(rec: RecommendationEntry) => !userAnimeIds.has(rec.entry.mal_id)
+				) as RecommendationEntry[];
+
+				// Sort by votes and remove duplicates
+				const recommendationsMap = new Map<number, RecommendationEntry>();
+
+				for (const rec of filteredRecommendations) {
+					const id = rec.entry.mal_id;
+					if (
+						!recommendationsMap.has(id) ||
+						recommendationsMap.get(id)!.votes < rec.votes
+					) {
+						recommendationsMap.set(id, rec);
+					}
+				}
+
+				const uniqueRecommendations = Array.from(recommendationsMap.values());
+
+				// Sort by votes (descending)
+				uniqueRecommendations.sort((a, b) => b.votes - a.votes);
+
+				return {
+					data: uniqueRecommendations.slice(0, 20),
+					sourceAnime: sampleAnime,
+				};
+			} catch (error) {
+				console.error("Error fetching personalized recommendations:", error);
+				setError(handleAppError(error, "RECOMMENDATIONS_ERROR"));
+				throw error;
+			}
+		},
+		enabled: !!userAnimeList && userAnimeList.length > 0,
+		staleTime: 12 * 60 * 60 * 1000, // 12 hours
 	});
 }

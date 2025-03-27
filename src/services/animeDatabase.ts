@@ -68,7 +68,7 @@ export const animeDatabase = {
 		try {
 			console.log(`Invoking get_user_anime with anime_id: ${animeId}`);
 			const result = await invoke<TauriUserAnime | null>("get_user_anime", {
-				anime_id: animeId,
+				animeId: animeId,
 			});
 			return result ? convertFromTauriAnime(result) : null;
 		} catch (error) {
@@ -116,7 +116,7 @@ export const animeDatabase = {
 		try {
 			console.log(`Invoking delete_user_anime with anime_id: ${animeId}`);
 			const wasDeleted = await invoke<boolean>("delete_user_anime", {
-				anime_id: animeId,
+				animeId: animeId,
 			});
 
 			if (wasDeleted) {

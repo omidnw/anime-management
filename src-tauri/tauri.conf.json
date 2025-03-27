@@ -1,8 +1,8 @@
 {
 	"$schema": "https://schema.tauri.app/config/2",
 	"productName": "AniTrack",
-	"version": "0.1.0",
-	"identifier": "com.anime-management.app",
+	"version": "1.0.0",
+	"identifier": "com.anitrack.app",
 	"build": {
 		"beforeDevCommand": "yarn dev",
 		"devUrl": "http://localhost:1420",
@@ -10,6 +10,7 @@
 		"frontendDist": "../dist"
 	},
 	"app": {
+		"withGlobalTauri": true,
 		"windows": [
 			{
 				"title": "AniTrack",
@@ -36,5 +37,10 @@
 			"icons/icon.icns",
 			"icons/icon.ico"
 		]
+	},
+	"plugins": {
+		"shell": {
+			"open": true
+		}
 	}
 }

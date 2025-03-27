@@ -48,11 +48,39 @@ function executeWithRateLimit<T>(request: () => Promise<T>): Promise<T> {
 // API endpoints
 export const jikanApi = {
 	// Search anime by keyword
-	searchAnime: (query: string, page = 1, limit = 25) => {
+	searchAnime: (
+		query: string,
+		page = 1,
+		limit = 25,
+		filters?: {
+			type?: "tv" | "movie" | "ova" | "special" | "ona" | "music";
+			status?: "airing" | "complete" | "upcoming";
+			rating?: "g" | "pg" | "pg13" | "r17" | "r" | "rx";
+			genres?: number[];
+			min_score?: number;
+			max_score?: number;
+			order_by?:
+				| "title"
+				| "start_date"
+				| "end_date"
+				| "score"
+				| "rank"
+				| "popularity"
+				| "members"
+				| "favorites";
+			sort?: "desc" | "asc";
+		}
+	) => {
 		return executeWithRateLimit<JikanResponse<AnimeData[]>>(() =>
 			axios
 				.get(`${BASE_URL}/anime`, {
-					params: { q: query, page, limit },
+					params: {
+						q: query,
+						page,
+						limit,
+						...filters,
+						genres: filters?.genres?.join(","),
+					},
 				})
 				.then((response) => response.data)
 		);

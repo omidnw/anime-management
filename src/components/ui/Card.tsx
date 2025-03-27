@@ -12,6 +12,7 @@ interface CardProps {
 	onClick?: () => void;
 	hoverEffect?: boolean;
 	className?: string;
+	backgroundColor?: string;
 }
 
 const StyledCard = styled.div<{
@@ -22,10 +23,12 @@ const StyledCard = styled.div<{
 	clickable: boolean;
 	hoverEffect: boolean;
 	theme: any;
+	backgroundColor?: string;
 }>`
-	background-color: ${(props) => props.theme.colors.surface};
-	color: ${(props) => props.theme.colors.text};
-	border-radius: ${(props) => props.theme.borderRadius};
+	background-color: ${(props) =>
+		props.backgroundColor || props.theme?.colors?.surface || "#121212"};
+	color: ${(props) => props.theme?.colors?.text || "#ffffff"};
+	border-radius: ${(props) => props.theme?.borderRadius || "8px"};
 	padding: ${(props) => props.padding};
 	width: ${(props) => props.width || "auto"};
 	height: ${(props) => props.height || "auto"};
@@ -39,7 +42,9 @@ const StyledCard = styled.div<{
 			case "high":
 				return `box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);`;
 			default:
-				return `box-shadow: ${props.theme.boxShadow};`;
+				return `box-shadow: ${
+					props.theme?.boxShadow || "0 4px 8px rgba(0, 0, 0, 0.07)"
+				};`;
 		}
 	}}
 
@@ -65,11 +70,19 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
 			onClick,
 			hoverEffect = false,
 			className,
+			backgroundColor,
 		},
 		ref
 	) => {
 		const { currentTheme } = useTheme();
-		const theme = themes[currentTheme];
+		const theme = themes[currentTheme] || {
+			colors: {
+				surface: "#121212",
+				text: "#ffffff",
+			},
+			borderRadius: "8px",
+			boxShadow: "0 4px 8px rgba(0, 0, 0, 0.07)",
+		};
 
 		return (
 			<StyledCard
@@ -82,6 +95,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
 				hoverEffect={hoverEffect}
 				className={className}
 				theme={theme}
+				backgroundColor={backgroundColor}
 				ref={ref}
 			>
 				{children}

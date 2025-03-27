@@ -1,31 +1,46 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ThemeProvider } from "./themes/ThemeProvider";
+import { OfflineProvider } from "./contexts/OfflineContext";
+import OfflineIndicator from "./components/OfflineIndicator";
 import styled from "@emotion/styled";
 import {
 	Sun,
 	Moon,
 	Cherry,
-	Search,
-	Plus,
-	Home,
-	ListFilter,
 	Settings as SettingsIcon,
-	Menu,
+	Layout,
+	Menu as MenuIcon,
 } from "lucide-react";
 import { Button } from "./components/ui/Button";
 import { useTheme } from "./themes/ThemeProvider";
 import { themes } from "./themes/themes";
-import { useTopAnime } from "./hooks/useAnime";
-import { AnimeCard } from "./components/AnimeCard";
 import { AppTheme } from "./themes/themeTypes";
 import { AnimeDetail } from "./pages/AnimeDetail";
 import { UserAnimeList } from "./pages/UserAnimeList";
 import { SearchPage } from "./pages/SearchPage";
-import { Settings } from "./pages/Settings";
+import SettingsPage from "./pages/SettingsPage";
 import { HomePage } from "./pages/HomePage";
+import { StatsDashboard } from "./pages/StatsDashboard";
+import { RecommendationsPage } from "./pages/RecommendationsPage";
+import { SeasonalAnimePage } from "./pages/SeasonalAnimePage";
+import { DiscoveryPage } from "./pages/DiscoveryPage";
+import { TrendingAnimePage } from "./pages/TrendingAnimePage";
 import { ResponsiveLayout, useResponsive } from "./components/ResponsiveLayout";
+import StandardMenuBar from "./components/navigation/StandardMenuBar";
+import HamburgerMenu from "./components/navigation/HamburgerMenu";
+import { MenuDisplayType } from "./components/settings/MenuSettings";
 
-type AppPage = "home" | "myList" | "search" | "detail" | "settings";
+type AppPage =
+	| "home"
+	| "myList"
+	| "search"
+	| "detail"
+	| "settings"
+	| "stats"
+	| "recommendations"
+	| "seasonal"
+	| "discovery"
+	| "trending";
 
 function ThemeSwitcher() {
 	const { currentTheme, setTheme } = useTheme();
@@ -110,72 +125,6 @@ const Logo = styled.h1`
 	}
 `;
 
-const Navigation = styled.nav`
-	margin-bottom: 24px;
-
-	@media (max-width: 576px) {
-		overflow-x: auto;
-		padding-bottom: 8px;
-		margin-bottom: 16px;
-
-		&::-webkit-scrollbar {
-			height: 4px;
-		}
-
-		&::-webkit-scrollbar-thumb {
-			background-color: rgba(0, 0, 0, 0.2);
-			border-radius: 4px;
-		}
-	}
-`;
-
-const NavList = styled.ul`
-	display: flex;
-	gap: 8px;
-	list-style: none;
-	padding: 0;
-	margin: 0;
-
-	@media (max-width: 576px) {
-		width: max-content;
-	}
-`;
-
-const MainSection = styled.main`
-	margin-bottom: 48px;
-`;
-
-const SectionHeader = styled.div`
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 16px;
-
-	@media (max-width: 576px) {
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 8px;
-	}
-`;
-
-const SectionTitle = styled.h2`
-	margin: 0;
-	font-size: 20px;
-	font-weight: 600;
-`;
-
-const AnimeGrid = styled.div`
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-	gap: 24px;
-	margin-top: 24px;
-
-	@media (max-width: 576px) {
-		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-		gap: 16px;
-	}
-`;
-
 const HeaderActions = styled.div`
 	display: flex;
 	gap: 16px;
@@ -186,12 +135,12 @@ const HeaderActions = styled.div`
 	}
 `;
 
-const MobileMenu = styled.div`
-	display: none;
+const MainSection = styled.main`
+	margin-bottom: 48px;
+`;
 
-	@media (max-width: 576px) {
-		display: block;
-	}
+const NavigationContainer = styled.div`
+	position: relative;
 `;
 
 function MainContent() {
@@ -199,21 +148,92 @@ function MainContent() {
 	const theme = themes[currentTheme];
 	const [currentPage, setCurrentPage] = useState<AppPage>("home");
 	const [selectedAnimeId, setSelectedAnimeId] = useState<number | null>(null);
+	const [urlParams, setUrlParams] = useState<Record<string, string>>({});
 	const deviceType = useResponsive();
-	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+	const [menuDisplayType, setMenuDisplayType] =
+		useState<MenuDisplayType>("standard");
+	const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+	// Toggle menu type directly without page reload
+	const toggleMenuType = () => {
+		const newType = menuDisplayType === "standard" ? "hamburger" : "standard";
+		setMenuDisplayType(newType);
+		localStorage.setItem("menuDisplayType", newType);
+	};
+
+	// Toggle hamburger menu open/closed
+	const toggleMenu = () => {
+		setIsMenuOpen(!isMenuOpen);
+	};
+
+	// Load menu display type preference from localStorage
+	useEffect(() => {
+		const savedMenuType = localStorage.getItem(
+			"menuDisplayType"
+		) as MenuDisplayType | null;
+		if (savedMenuType) {
+			setMenuDisplayType(savedMenuType);
+		}
+
+		// Listen for menu type changes from settings page
+		const handleMenuSettingsChange = (event: Event) => {
+			const customEvent = event as CustomEvent<{ menuType: MenuDisplayType }>;
+			if (customEvent.detail && customEvent.detail.menuType) {
+				setMenuDisplayType(customEvent.detail.menuType);
+			}
+		};
+
+		window.addEventListener(
+			"menuSettingsChanged",
+			handleMenuSettingsChange as EventListener
+		);
+
+		return () => {
+			window.removeEventListener(
+				"menuSettingsChanged",
+				handleMenuSettingsChange as EventListener
+			);
+		};
+	}, []);
 
 	const navigateTo = (page: AppPage) => {
 		setCurrentPage(page);
-		setMobileMenuOpen(false);
+		// Reset selected anime when navigating away from detail page
+		if (page !== "detail") {
+			setSelectedAnimeId(null);
+		}
+		// Reset URL params when changing pages
+		if (page !== "search") {
+			setUrlParams({});
+		}
+		// Close menu if open
+		if (isMenuOpen) {
+			setIsMenuOpen(false);
+		}
 	};
 
 	const handleAnimeSelect = (id: number) => {
 		setSelectedAnimeId(id);
-		navigateTo("detail");
+		setCurrentPage("detail");
 	};
 
 	const handleBackToHome = () => {
-		navigateTo("home");
+		setCurrentPage("home");
+		setSelectedAnimeId(null);
+	};
+
+	const handleNavigateWithParams = (
+		page: string,
+		params?: Record<string, string>
+	) => {
+		// Convert string page to AppPage type
+		const targetPage = page as AppPage;
+		setCurrentPage(targetPage);
+		if (params) {
+			setUrlParams(params);
+		} else {
+			setUrlParams({});
+		}
 	};
 
 	return (
@@ -236,6 +256,15 @@ function MainContent() {
 							</Button>
 						)}
 						<ThemeSwitcher />
+						{menuDisplayType === "hamburger" && (
+							<Button
+								variant="outline"
+								size="small"
+								icon={<MenuIcon size={18} />}
+								onClick={toggleMenu}
+								aria-label="Toggle navigation menu"
+							/>
+						)}
 						{deviceType === "mobile" && (
 							<Button
 								variant="outline"
@@ -247,57 +276,76 @@ function MainContent() {
 					</HeaderActions>
 				</Header>
 
-				<Navigation>
-					<NavList>
-						<li>
-							<Button
-								icon={<Home size={18} />}
-								variant={currentPage === "home" ? "primary" : "outline"}
-								onClick={() => navigateTo("home")}
-							>
-								{deviceType !== "mobile" && "Home"}
-							</Button>
-						</li>
-						<li>
-							<Button
-								icon={<ListFilter size={18} />}
-								variant={currentPage === "myList" ? "primary" : "outline"}
-								onClick={() => navigateTo("myList")}
-							>
-								{deviceType !== "mobile" && "My List"}
-							</Button>
-						</li>
-						<li>
-							<Button
-								icon={<Search size={18} />}
-								variant={currentPage === "search" ? "primary" : "outline"}
-								onClick={() => navigateTo("search")}
-							>
-								{deviceType !== "mobile" && "Search"}
-							</Button>
-						</li>
-					</NavList>
-				</Navigation>
+				<OfflineIndicator />
 
-				{currentPage === "home" && (
-					<HomePage onAnimeSelect={handleAnimeSelect} />
-				)}
+				{/* Render menu based on user preference */}
+				<NavigationContainer>
+					{menuDisplayType === "standard" ? (
+						<StandardMenuBar
+							currentPage={currentPage}
+							onNavigation={(page) => navigateTo(page as AppPage)}
+							theme={theme}
+						/>
+					) : (
+						<HamburgerMenu
+							currentPage={currentPage}
+							onNavigation={(page) => navigateTo(page as AppPage)}
+							theme={theme}
+							hideToggleButton={true}
+							isMenuOpen={isMenuOpen}
+							onMenuToggle={toggleMenu}
+						/>
+					)}
+				</NavigationContainer>
 
-				{currentPage === "myList" && (
-					<UserAnimeList onAnimeSelect={handleAnimeSelect} />
-				)}
+				<MainSection>
+					{currentPage === "home" && (
+						<HomePage onAnimeSelect={handleAnimeSelect} />
+					)}
 
-				{currentPage === "search" && (
-					<SearchPage onAnimeSelect={handleAnimeSelect} />
-				)}
+					{currentPage === "myList" && (
+						<UserAnimeList onAnimeSelect={handleAnimeSelect} />
+					)}
 
-				{currentPage === "detail" && selectedAnimeId && (
-					<AnimeDetail animeId={selectedAnimeId} onBack={handleBackToHome} />
-				)}
+					{currentPage === "search" && (
+						<SearchPage
+							onAnimeSelect={handleAnimeSelect}
+							initialParams={urlParams}
+						/>
+					)}
 
-				{currentPage === "settings" && (
-					<Settings onClose={() => navigateTo("home")} />
-				)}
+					{currentPage === "detail" && selectedAnimeId && (
+						<AnimeDetail animeId={selectedAnimeId} onBack={handleBackToHome} />
+					)}
+
+					{currentPage === "settings" && <SettingsPage />}
+
+					{currentPage === "stats" && (
+						<StatsDashboard onBack={() => navigateTo("home")} />
+					)}
+
+					{currentPage === "recommendations" && (
+						<RecommendationsPage onAnimeSelect={handleAnimeSelect} />
+					)}
+
+					{currentPage === "seasonal" && (
+						<SeasonalAnimePage onAnimeSelect={handleAnimeSelect} />
+					)}
+
+					{currentPage === "discovery" && (
+						<DiscoveryPage
+							onAnimeSelect={handleAnimeSelect}
+							onNavigate={handleNavigateWithParams}
+						/>
+					)}
+
+					{currentPage === "trending" && (
+						<TrendingAnimePage
+							onAnimeSelect={handleAnimeSelect}
+							onNavigate={handleNavigateWithParams}
+						/>
+					)}
+				</MainSection>
 			</ResponsiveLayout>
 		</AppContainer>
 	);
@@ -306,7 +354,9 @@ function MainContent() {
 function App() {
 	return (
 		<ThemeProvider>
-			<MainContent />
+			<OfflineProvider>
+				<MainContent />
+			</OfflineProvider>
 		</ThemeProvider>
 	);
 }

@@ -56,7 +56,7 @@ const StyledButton = styled.button<{
 			case "primary":
 				return `
           background-color: ${theme.colors.primary};
-          color: ${theme.name === "sakura" ? "#3D2E39" : "#ffffff"};
+          color: ${theme.name === "sakura" ? "#2B2B2B" : "#ffffff"};
           
           &:hover:not(:disabled) {
             background-color: ${theme.colors.primaryHover};
@@ -69,7 +69,7 @@ const StyledButton = styled.button<{
 			case "secondary":
 				return `
           background-color: ${theme.colors.secondary};
-          color: ${theme.name === "sakura" ? "#3D2E39" : "#ffffff"};
+          color: ${theme.name === "sakura" ? "#2B2B2B" : "#ffffff"};
           
           &:hover:not(:disabled) {
             background-color: ${theme.colors.secondaryHover};
@@ -83,7 +83,7 @@ const StyledButton = styled.button<{
 				return `
           background-color: transparent;
           border: 1px solid ${theme.colors.primary};
-          color: ${theme.name === "sakura" ? "#5D4E59" : theme.colors.primary};
+          color: ${theme.name === "sakura" ? "#2B2B2B" : theme.colors.primary};
           
           &:hover:not(:disabled) {
             background-color: ${theme.colors.surfaceHover};
@@ -96,7 +96,7 @@ const StyledButton = styled.button<{
 			case "text":
 				return `
           background-color: transparent;
-          color: ${theme.name === "sakura" ? "#5D4E59" : theme.colors.primary};
+          color: ${theme.name === "sakura" ? "#2B2B2B" : theme.colors.primary};
           
           &:hover:not(:disabled) {
             background-color: ${theme.colors.surfaceHover};
