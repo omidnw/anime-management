@@ -1,5 +1,5 @@
 [package]
-name = "anitrack"
+name = "anime-management"
 version = "1.0.0"
 description = "A Tauri App"
 authors = ["Omid Reza Keshtkar"]

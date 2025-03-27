@@ -1,4 +1,4 @@
-# AniTrack - Anime Tracking Application
+# Anime Management - Anime Tracking Application
 
 A comprehensive anime tracking application built with Tauri, React, and TypeScript that helps users discover, track, and manage their anime-watching experience.
 

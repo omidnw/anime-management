@@ -1,8 +1,8 @@
 {
 	"$schema": "https://schema.tauri.app/config/2",
-	"productName": "AniTrack",
+	"productName": "Anime Management",
 	"version": "1.0.0",
-	"identifier": "com.anitrack.app",
+	"identifier": "com.anime-management.app",
 	"build": {
 		"beforeDevCommand": "yarn dev",
 		"devUrl": "http://localhost:1420",
@@ -13,7 +13,7 @@
 		"withGlobalTauri": true,
 		"windows": [
 			{
-				"title": "AniTrack",
+				"title": "Anime Management",
 				"width": 1280,
 				"height": 800,
 				"minWidth": 940,

@@ -67,7 +67,7 @@ fn get_db_path() -> PathBuf {
         }
     });
 
-    let app_data_dir = PathBuf::from(home).join(".anitrack");
+    let app_data_dir = PathBuf::from(home).join(".anime-management");
 
     // Create directory if it doesn't exist
     fs::create_dir_all(&app_data_dir).expect("Failed to create app data directory");

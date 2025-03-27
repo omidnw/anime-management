@@ -110,7 +110,8 @@ const SettingsStorage: React.FC = () => {
 					<MenuItem value="custom">Custom Location</MenuItem>
 				</Select>
 				<FormHelperText>
-					Choose where AniTrack should store cache files and offline data
+					Choose where Anime Management should store cache files and offline
+					data
 				</FormHelperText>
 			</FormControl>
 

@@ -4,7 +4,7 @@ This directory contains GitHub Actions workflows for automating various tasks.
 
 ## Release Workflow
 
-The `release.yml` file defines a workflow that automatically builds the AniTrack application for multiple platforms when a new tag is pushed.
+The `release.yml` file defines a workflow that automatically builds the Anime Management application for multiple platforms when a new tag is pushed.
 
 ### Supported Platforms
 

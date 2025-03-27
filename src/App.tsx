@@ -239,7 +239,7 @@ function MainContent() {
 			<ResponsiveLayout>
 				<Header>
 					<Logo onClick={() => navigateTo("home")}>
-						<span>AniTrack</span>
+						<span>Anime Management</span>
 					</Logo>
 
 					<HeaderActions>

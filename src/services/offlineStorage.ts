@@ -1,7 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import {
-	BaseDirectory,
-} from "@tauri-apps/plugin-fs";
+import { BaseDirectory } from "@tauri-apps/plugin-fs";
 import { UserAnimeData } from "../types/anime";
 import { animeDatabase } from "./animeDatabase";
 import { isOnline } from "../utils/network";
@@ -29,7 +27,7 @@ const CACHE_VERSION = 1;
 const CACHE_EXPIRATION = 24 * 60 * 60 * 1000;
 
 // Default folder name
-const DEFAULT_FOLDER_NAME = "AniTrack";
+const DEFAULT_FOLDER_NAME = "AnimeManagement";
 
 // Storage files
 const ANIME_CACHE_FILENAME = "anime_cache.json";

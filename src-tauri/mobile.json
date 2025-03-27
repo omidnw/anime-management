@@ -4,7 +4,7 @@
 			"files": {
 				"gradle-properties": "src-tauri/gen/android/gradle.properties",
 				"gradle-settings": "src-tauri/gen/android/settings.gradle",
-				"main-activity": "src-tauri/gen/android/app/src/main/java/com/anitrack/app/MainActivity.kt",
+				"main-activity": "src-tauri/gen/android/app/src/main/java/com/anime-management/app/MainActivity.kt",
 				"gradle-wrapper-properties": "src-tauri/gen/android/gradle/wrapper/gradle-wrapper.properties"
 			},
 			"assets": [],

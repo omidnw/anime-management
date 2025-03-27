@@ -49,7 +49,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: "AniTrack ${{ github.ref_name }}"
+          releaseName: "anime-management ${{ github.ref_name }}"
           releaseBody: "See the assets to download and install this version."
           releaseDraft: true
           prerelease: false
@@ -232,21 +232,21 @@ jobs:
         run: |
           cd src-tauri/gen/ios
           mkdir -p Payload
-          cp -r build/Debug-iphoneos/AniTrack.app Payload/
-          zip -r AniTrack-debug.ipa Payload
+          cp -r build/Debug-iphoneos/anime-management.app Payload/
+          zip -r anime-management-debug.ipa Payload
 
       - name: Package as IPA (Release)
         if: env.HAS_APPLE_CERTIFICATE == 'true'
         run: |
           cd src-tauri/gen/ios
           mkdir -p Payload
-          cp -r build/Release-iphoneos/AniTrack.app Payload/
-          zip -r AniTrack-release.ipa Payload
+          cp -r build/Release-iphoneos/anime-management.app Payload/
+          zip -r anime-management-release.ipa Payload
 
       - name: Upload iOS debug artifact to release
         uses: softprops/action-gh-release@v1
         with:
-          files: src-tauri/gen/ios/AniTrack-debug.ipa
+          files: src-tauri/gen/ios/anime-management-debug.ipa
           tag_name: ${{ github.ref_name }}
           draft: true
         env:
@@ -256,7 +256,7 @@ jobs:
         if: env.HAS_APPLE_CERTIFICATE == 'true'
         uses: softprops/action-gh-release@v1
         with:
-          files: src-tauri/gen/ios/AniTrack-release.ipa
+          files: src-tauri/gen/ios/anime-management-release.ipa
           tag_name: ${{ github.ref_name }}
           draft: true
         env:
