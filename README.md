@@ -43,6 +43,41 @@ A comprehensive anime tracking application built with Tauri, React, and TypeScri
 - **Time Format Switching**: Toggle between 12-hour and 24-hour time formats
 - **View Customization**: Personalize how you view and interact with anime data
 
+## Upcoming Features
+
+### Cloud Integration
+
+Store and sync your anime data across devices with your favorite cloud services:
+
+- iCloud
+- Dropbox
+- OneDrive
+- Google Drive
+- MEGA.nz
+
+### Custom Lists System
+
+- Create multiple personalized anime lists with custom names
+- Organize your anime into different categories (favorites, genres, watchlists)
+- Apply custom sorting and filtering to each list
+- Share specific lists with friends
+
+### Anime Tracking Site Integration
+
+Sync your watching data with popular anime tracking platforms:
+
+- MyAnimeList (MAL)
+- Anime-Planet
+- AniList
+- Kitsu
+
+### Social Features
+
+- Share your anime lists and recommendations with friends
+- Add friends via social media platforms
+- Compare watching statistics with friends
+- No dedicated backend required - works through existing social media APIs
+
 ## Getting Started
 
 ### Prerequisites
