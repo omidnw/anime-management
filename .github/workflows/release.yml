@@ -15,7 +15,7 @@ jobs:
         platform: [macos-latest, ubuntu-latest, windows-latest]
         include:
           - platform: macos-latest
-            args: --target universal-apple-darwin
+            args: ""
           - platform: ubuntu-latest
             args: ""
           - platform: windows-latest
@@ -34,16 +34,52 @@ jobs:
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
 
+      # Add macOS specific targets
+      - name: Add macOS targets
+        if: matrix.platform == 'macos-latest'
+        run: |
+          rustup target add x86_64-apple-darwin aarch64-apple-darwin
+
+      # Updated Ubuntu dependencies (fixing webkit package name)
       - name: Install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf libx11-dev libxdo-dev libxcb-shape0-dev libxcb-xfixes0-dev
+          sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf libx11-dev libxdo-dev libxcb-shape0-dev libxcb-xfixes0-dev
 
       - name: Install frontend dependencies
         run: yarn install
 
-      - name: Build the app
+      # Build macOS universal binary in two steps to avoid Rust target issues
+      - name: Build macOS App (Apple Silicon)
+        if: matrix.platform == 'macos-latest'
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "anime-management ${{ github.ref_name }}"
+          releaseBody: "See the assets to download and install this version."
+          releaseDraft: true
+          prerelease: false
+          args: --target aarch64-apple-darwin
+
+      - name: Build macOS App (Intel)
+        if: matrix.platform == 'macos-latest'
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "anime-management ${{ github.ref_name }}"
+          releaseBody: "See the assets to download and install this version."
+          releaseDraft: true
+          prerelease: false
+          args: --target x86_64-apple-darwin
+
+      # Standard build for Windows and Linux
+      - name: Build non-macOS App
+        if: matrix.platform != 'macos-latest'
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -58,7 +94,7 @@ jobs:
   publish-tauri-android:
     permissions:
       contents: write
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -79,10 +115,11 @@ jobs:
           java-version: "17"
           distribution: "temurin"
 
+      # Updated Ubuntu dependencies (fixing webkit package name)
       - name: Install dependencies (ubuntu)
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf libx11-dev libxdo-dev
+          sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf libx11-dev libxdo-dev
 
       - name: Install frontend dependencies
         run: yarn install
@@ -215,27 +252,40 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           echo -n "${{ secrets.APPLE_PROVISIONING_PROFILE }}" | base64 --decode -o ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
 
-      - name: Build iOS App (Debug Simulator)
+      # Build for simulator (always works without signing)
+      - name: Build iOS App (Simulator)
         run: |
-          cargo tauri ios build --debug
+          cargo tauri ios build --debug --target simulator
 
-      - name: Build iOS App (Debug Device)
-        run: |
-          cargo tauri ios build --debug --device
-
-      - name: Build iOS App (Release)
+      # Only attempt device builds if we have certificates
+      - name: Build iOS App (Device Debug)
         if: env.HAS_APPLE_CERTIFICATE == 'true'
         run: |
-          cargo tauri ios build --release --device
+          cargo tauri ios build --debug --target device
 
-      - name: Package as IPA (Debug)
+      - name: Build iOS App (Device Release)
+        if: env.HAS_APPLE_CERTIFICATE == 'true'
+        run: |
+          cargo tauri ios build --release --target device
+
+      # Create a simulator IPA (this will work without signing)
+      - name: Package Simulator IPA
+        run: |
+          cd src-tauri/gen/ios
+          mkdir -p Payload
+          cp -r build/Debug-iphonesimulator/anime-management.app Payload/
+          zip -r anime-management-simulator.ipa Payload
+
+      # Only try to package device IPAs if we have signing
+      - name: Package Device IPA (Debug)
+        if: env.HAS_APPLE_CERTIFICATE == 'true'
         run: |
           cd src-tauri/gen/ios
           mkdir -p Payload
           cp -r build/Debug-iphoneos/anime-management.app Payload/
           zip -r anime-management-debug.ipa Payload
 
-      - name: Package as IPA (Release)
+      - name: Package Device IPA (Release)
         if: env.HAS_APPLE_CERTIFICATE == 'true'
         run: |
           cd src-tauri/gen/ios
@@ -243,7 +293,19 @@ jobs:
           cp -r build/Release-iphoneos/anime-management.app Payload/
           zip -r anime-management-release.ipa Payload
 
-      - name: Upload iOS debug artifact to release
+      # Always upload simulator IPA
+      - name: Upload iOS Simulator IPA to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: src-tauri/gen/ios/anime-management-simulator.ipa
+          tag_name: ${{ github.ref_name }}
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Only upload device IPAs if we have signing
+      - name: Upload iOS Debug Device IPA to release
+        if: env.HAS_APPLE_CERTIFICATE == 'true'
         uses: softprops/action-gh-release@v1
         with:
           files: src-tauri/gen/ios/anime-management-debug.ipa
@@ -252,7 +314,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload iOS release artifact to release
+      - name: Upload iOS Release Device IPA to release
         if: env.HAS_APPLE_CERTIFICATE == 'true'
         uses: softprops/action-gh-release@v1
         with:
