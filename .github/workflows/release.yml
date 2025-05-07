@@ -16,6 +16,9 @@ jobs:
       draft: true
       prerelease: false
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Set up release information
         run: echo "Preparing release ${{ github.ref_name }}"
 
@@ -23,6 +26,8 @@ jobs:
   build-linux:
     needs: prepare-release
     uses: ./.github/workflows/build-linux.yml
+    permissions:
+      contents: write
     with:
       tag_name: ${{ needs.prepare-release.outputs.tag_name }}
       release_name: ${{ needs.prepare-release.outputs.release_name }}
@@ -36,6 +41,8 @@ jobs:
   build-macos:
     needs: prepare-release
     uses: ./.github/workflows/build-macos.yml
+    permissions:
+      contents: write
     with:
       tag_name: ${{ needs.prepare-release.outputs.tag_name }}
       release_name: ${{ needs.prepare-release.outputs.release_name }}
@@ -49,6 +56,8 @@ jobs:
   build-windows:
     needs: prepare-release
     uses: ./.github/workflows/build-windows.yml
+    permissions:
+      contents: write
     with:
       tag_name: ${{ needs.prepare-release.outputs.tag_name }}
       release_name: ${{ needs.prepare-release.outputs.release_name }}
@@ -62,6 +71,8 @@ jobs:
   build-android:
     needs: prepare-release
     uses: ./.github/workflows/build-android.yml
+    permissions:
+      contents: write
     with:
       tag_name: ${{ needs.prepare-release.outputs.tag_name }}
       release_name: ${{ needs.prepare-release.outputs.release_name }}
@@ -79,6 +90,8 @@ jobs:
   build-ios:
     needs: prepare-release
     uses: ./.github/workflows/build-ios.yml
+    permissions:
+      contents: write
     with:
       tag_name: ${{ needs.prepare-release.outputs.tag_name }}
       release_name: ${{ needs.prepare-release.outputs.release_name }}
