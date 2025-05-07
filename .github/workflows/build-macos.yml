@@ -21,7 +21,7 @@ on:
         type: boolean
         default: false
     secrets:
-      GITHUB_TOKEN:
+      CUSTOM_GITHUB_TOKEN:
         required: true
 
 jobs:
@@ -59,7 +59,7 @@ jobs:
       - name: Build macOS App (${{ matrix.name }})
         uses: tauri-apps/tauri-action@v0
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
         with:
           tagName: ${{ inputs.tag_name }}
           releaseName: "${{ inputs.release_name }} (${{ matrix.name }})"

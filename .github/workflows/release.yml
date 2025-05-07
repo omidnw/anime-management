@@ -30,7 +30,7 @@ jobs:
       draft: ${{ needs.prepare-release.outputs.draft }}
       prerelease: ${{ needs.prepare-release.outputs.prerelease }}
     secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CUSTOM_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # Build macOS Intel and Apple Silicon
   build-macos:
@@ -43,7 +43,7 @@ jobs:
       draft: ${{ needs.prepare-release.outputs.draft }}
       prerelease: ${{ needs.prepare-release.outputs.prerelease }}
     secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CUSTOM_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # Build Windows
   build-windows:
@@ -56,7 +56,7 @@ jobs:
       draft: ${{ needs.prepare-release.outputs.draft }}
       prerelease: ${{ needs.prepare-release.outputs.prerelease }}
     secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CUSTOM_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # Build Android
   build-android:
@@ -69,7 +69,7 @@ jobs:
       draft: ${{ needs.prepare-release.outputs.draft }}
       prerelease: ${{ needs.prepare-release.outputs.prerelease }}
     secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CUSTOM_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
       ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
       ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
@@ -86,7 +86,7 @@ jobs:
       draft: ${{ needs.prepare-release.outputs.draft }}
       prerelease: ${{ needs.prepare-release.outputs.prerelease }}
     secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CUSTOM_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
       APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
       APPLE_KEYCHAIN_PASSWORD: ${{ secrets.APPLE_KEYCHAIN_PASSWORD }}

@@ -21,7 +21,7 @@ on:
         type: boolean
         default: false
     secrets:
-      GITHUB_TOKEN:
+      CUSTOM_GITHUB_TOKEN:
         required: true
       ANDROID_KEYSTORE:
         required: false
@@ -133,7 +133,7 @@ jobs:
           tag_name: ${{ inputs.tag_name }}
           draft: ${{ inputs.draft }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
 
       - name: Upload Android release APK to release
         if: env.HAS_ANDROID_KEYSTORE == 'true'
@@ -143,4 +143,4 @@ jobs:
           tag_name: ${{ inputs.tag_name }}
           draft: ${{ inputs.draft }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
