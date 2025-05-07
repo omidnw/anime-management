@@ -1,0 +1,146 @@
+name: "Build Android"
+
+on:
+  workflow_call:
+    inputs:
+      tag_name:
+        required: true
+        type: string
+      release_name:
+        required: true
+        type: string
+      release_body:
+        required: true
+        type: string
+      draft:
+        required: false
+        type: boolean
+        default: true
+      prerelease:
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      GITHUB_TOKEN:
+        required: true
+      ANDROID_KEYSTORE:
+        required: false
+      ANDROID_KEYSTORE_PASSWORD:
+        required: false
+      ANDROID_KEY_ALIAS:
+        required: false
+      ANDROID_KEY_PASSWORD:
+        required: false
+
+jobs:
+  build-android:
+    permissions:
+      contents: write
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android, armv7-linux-androideabi, i686-linux-android, x86_64-linux-android
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+
+      # Install dependencies (similar to Linux builds but without ARM64 cross-compilation)
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgtk-3-dev \
+            libwebkit2gtk-4.0-dev \
+            libwebkit2gtk-4.1-dev \
+            libjavascriptcoregtk-4.0-dev \
+            libjavascriptcoregtk-4.1-dev \
+            libsoup2.4-dev \
+            libsoup-3.0-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            libx11-dev \
+            libxdo-dev \
+            libfuse2
+
+      - name: Install frontend dependencies
+        run: yarn install
+
+      - name: Install Android SDK
+        run: |
+          mkdir -p $HOME/Android/Sdk
+          ANDROID_TOOLS_URL="https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip"
+          wget -O /tmp/android-tools.zip $ANDROID_TOOLS_URL
+          unzip /tmp/android-tools.zip -d $HOME/Android/Sdk/cmdline-tools
+          mv $HOME/Android/Sdk/cmdline-tools/cmdline-tools $HOME/Android/Sdk/cmdline-tools/latest
+          $HOME/Android/Sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/Android/Sdk "platform-tools" "platforms;android-33" "build-tools;33.0.1" "ndk;25.2.9519653"
+          echo "ANDROID_HOME=$HOME/Android/Sdk" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$HOME/Android/Sdk" >> $GITHUB_ENV
+          echo "NDK_HOME=$HOME/Android/Sdk/ndk/25.2.9519653" >> $GITHUB_ENV
+          echo "$HOME/Android/Sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$HOME/Android/Sdk/platform-tools" >> $GITHUB_PATH
+
+      # Set up environment variable to check if Android keystore exists
+      - name: Check Android Keystore Secret
+        run: |
+          if [ -n "${{ secrets.ANDROID_KEYSTORE }}" ]; then
+            echo "HAS_ANDROID_KEYSTORE=true" >> $GITHUB_ENV
+          fi
+
+      - name: Setup Android keystore
+        if: env.HAS_ANDROID_KEYSTORE == 'true'
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > android.keystore
+          echo "ANDROID_KEYSTORE_PATH=$PWD/android.keystore" >> $GITHUB_ENV
+
+      - name: Install Tauri CLI and the mobile CLI plugin
+        run: cargo install tauri-cli --version "^2.0.0-beta"
+
+      - name: Install mobile dependencies
+        run: |
+          cargo tauri android init
+
+      - name: Build Android APK (Debug)
+        run: |
+          cargo tauri android build --debug --verbose
+
+      - name: Build Android APK (Release)
+        if: env.HAS_ANDROID_KEYSTORE == 'true'
+        run: |
+          cargo tauri android build --release --verbose -- \
+            --signing-key $ANDROID_KEYSTORE_PATH \
+            --signing-key-pass ${{ secrets.ANDROID_KEYSTORE_PASSWORD }} \
+            --key-alias ${{ secrets.ANDROID_KEY_ALIAS }} \
+            --key-pass ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+      - name: Upload Android debug APK to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk
+          tag_name: ${{ inputs.tag_name }}
+          draft: ${{ inputs.draft }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Android release APK to release
+        if: env.HAS_ANDROID_KEYSTORE == 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk
+          tag_name: ${{ inputs.tag_name }}
+          draft: ${{ inputs.draft }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

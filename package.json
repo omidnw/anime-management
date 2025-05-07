@@ -8,7 +8,14 @@
 		"dev": "vite",
 		"build": "tsc && vite build",
 		"preview": "vite preview",
-		"tauri": "tauri"
+		"tauri": "tauri",
+		"build:linux:arm64": "chmod +x ./linuxBuild.sh && ./linuxBuild.sh",
+		"build:linux:x64": "chmod +x ./linuxBuild.x64.sh && ./linuxBuild.x64.sh",
+		"build:linux:all": "chmod +x ./buildAllLinux.sh && ./buildAllLinux.sh",
+		"rebuild:linux:arm64": "docker rmi tauri-linux-arm64-build || true && chmod +x ./linuxBuild.sh && ./linuxBuild.sh",
+		"rebuild:linux:x64": "docker rmi tauri-linux-x64-build || true && chmod +x ./linuxBuild.x64.sh && ./linuxBuild.x64.sh",
+		"rebuild:linux:all": "docker rmi tauri-linux-arm64-build tauri-linux-x64-build || true && chmod +x ./buildAllLinux.sh && ./buildAllLinux.sh",
+		"clean:build": "chmod +x ./cleanBuildOutput.sh && ./cleanBuildOutput.sh"
 	},
 	"dependencies": {
 		"@emotion/react": "^11.14.0",

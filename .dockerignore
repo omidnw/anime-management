@@ -1,0 +1,28 @@
+# Ignore node modules and build artifacts
+node_modules
+dist
+dist-ssr
+linux-dist
+
+# Ignore Rust build artifacts
+**/target/
+
+# Ignore git directories
+.git
+.github
+
+# Ignore development files
+.vscode
+.idea
+*.log
+**/*.bak
+**/*.tmp
+
+# Ignore Docker files
+Dockerfile*
+.dockerignore
+
+# Ignore test files
+**/__tests__
+**/*.test.*
+**/*.spec.*

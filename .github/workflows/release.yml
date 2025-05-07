@@ -6,320 +6,88 @@ on:
       - "v*"
 
 jobs:
-  publish-tauri-desktop:
-    permissions:
-      contents: write
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [macos-latest, ubuntu-latest, windows-latest]
-        include:
-          - platform: macos-latest
-            args: ""
-          - platform: ubuntu-latest
-            args: ""
-          - platform: windows-latest
-            args: ""
-
-    runs-on: ${{ matrix.platform }}
+  # Prepare release information that will be used by all the build workflows
+  prepare-release:
+    runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ github.ref_name }}
+      release_name: "anime-management ${{ github.ref_name }}"
+      release_body: "See the assets to download and install this version."
+      draft: true
+      prerelease: false
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Set up release information
+        run: echo "Preparing release ${{ github.ref_name }}"
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+  # Build Linux x64 and ARM64
+  build-linux:
+    needs: prepare-release
+    uses: ./.github/workflows/build-linux.yml
+    with:
+      tag_name: ${{ needs.prepare-release.outputs.tag_name }}
+      release_name: ${{ needs.prepare-release.outputs.release_name }}
+      release_body: ${{ needs.prepare-release.outputs.release_body }}
+      draft: ${{ needs.prepare-release.outputs.draft }}
+      prerelease: ${{ needs.prepare-release.outputs.prerelease }}
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@stable
+  # Build macOS Intel and Apple Silicon
+  build-macos:
+    needs: prepare-release
+    uses: ./.github/workflows/build-macos.yml
+    with:
+      tag_name: ${{ needs.prepare-release.outputs.tag_name }}
+      release_name: ${{ needs.prepare-release.outputs.release_name }}
+      release_body: ${{ needs.prepare-release.outputs.release_body }}
+      draft: ${{ needs.prepare-release.outputs.draft }}
+      prerelease: ${{ needs.prepare-release.outputs.prerelease }}
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Add macOS specific targets
-      - name: Add macOS targets
-        if: matrix.platform == 'macos-latest'
-        run: |
-          rustup target add x86_64-apple-darwin aarch64-apple-darwin
+  # Build Windows
+  build-windows:
+    needs: prepare-release
+    uses: ./.github/workflows/build-windows.yml
+    with:
+      tag_name: ${{ needs.prepare-release.outputs.tag_name }}
+      release_name: ${{ needs.prepare-release.outputs.release_name }}
+      release_body: ${{ needs.prepare-release.outputs.release_body }}
+      draft: ${{ needs.prepare-release.outputs.draft }}
+      prerelease: ${{ needs.prepare-release.outputs.prerelease }}
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Updated Ubuntu dependencies (fixing webkit package name)
-      - name: Install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf libx11-dev libxdo-dev libxcb-shape0-dev libxcb-xfixes0-dev
+  # Build Android
+  build-android:
+    needs: prepare-release
+    uses: ./.github/workflows/build-android.yml
+    with:
+      tag_name: ${{ needs.prepare-release.outputs.tag_name }}
+      release_name: ${{ needs.prepare-release.outputs.release_name }}
+      release_body: ${{ needs.prepare-release.outputs.release_body }}
+      draft: ${{ needs.prepare-release.outputs.draft }}
+      prerelease: ${{ needs.prepare-release.outputs.prerelease }}
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
+      ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
-      - name: Install frontend dependencies
-        run: yarn install
-
-      # Build macOS universal binary in two steps to avoid Rust target issues
-      - name: Build macOS App (Apple Silicon)
-        if: matrix.platform == 'macos-latest'
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tagName: ${{ github.ref_name }}
-          releaseName: "anime-management ${{ github.ref_name }}"
-          releaseBody: "See the assets to download and install this version."
-          releaseDraft: true
-          prerelease: false
-          args: --target aarch64-apple-darwin
-
-      - name: Build macOS App (Intel)
-        if: matrix.platform == 'macos-latest'
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tagName: ${{ github.ref_name }}
-          releaseName: "anime-management ${{ github.ref_name }}"
-          releaseBody: "See the assets to download and install this version."
-          releaseDraft: true
-          prerelease: false
-          args: --target x86_64-apple-darwin
-
-      # Standard build for Windows and Linux
-      - name: Build non-macOS App
-        if: matrix.platform != 'macos-latest'
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tagName: ${{ github.ref_name }}
-          releaseName: "anime-management ${{ github.ref_name }}"
-          releaseBody: "See the assets to download and install this version."
-          releaseDraft: true
-          prerelease: false
-          args: ${{ matrix.args }}
-
-  publish-tauri-android:
-    permissions:
-      contents: write
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-linux-android, armv7-linux-androideabi, i686-linux-android, x86_64-linux-android
-
-      - name: Setup Java JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: "17"
-          distribution: "temurin"
-
-      # Updated Ubuntu dependencies (fixing webkit package name)
-      - name: Install dependencies (ubuntu)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf libx11-dev libxdo-dev
-
-      - name: Install frontend dependencies
-        run: yarn install
-
-      - name: Install Android SDK
-        run: |
-          mkdir -p $HOME/Android/Sdk
-          ANDROID_TOOLS_URL="https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip"
-          wget -O /tmp/android-tools.zip $ANDROID_TOOLS_URL
-          unzip /tmp/android-tools.zip -d $HOME/Android/Sdk/cmdline-tools
-          mv $HOME/Android/Sdk/cmdline-tools/cmdline-tools $HOME/Android/Sdk/cmdline-tools/latest
-          $HOME/Android/Sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/Android/Sdk "platform-tools" "platforms;android-33" "build-tools;33.0.1" "ndk;25.2.9519653"
-          echo "ANDROID_HOME=$HOME/Android/Sdk" >> $GITHUB_ENV
-          echo "ANDROID_SDK_ROOT=$HOME/Android/Sdk" >> $GITHUB_ENV
-          echo "NDK_HOME=$HOME/Android/Sdk/ndk/25.2.9519653" >> $GITHUB_ENV
-          echo "$HOME/Android/Sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
-          echo "$HOME/Android/Sdk/platform-tools" >> $GITHUB_PATH
-
-      # Set up environment variable to check if Android keystore exists
-      - name: Check Android Keystore Secret
-        run: |
-          if [ -n "${{ secrets.ANDROID_KEYSTORE }}" ]; then
-            echo "HAS_ANDROID_KEYSTORE=true" >> $GITHUB_ENV
-          fi
-
-      - name: Setup Android keystore
-        if: env.HAS_ANDROID_KEYSTORE == 'true'
-        run: |
-          echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > android.keystore
-          echo "ANDROID_KEYSTORE_PATH=$PWD/android.keystore" >> $GITHUB_ENV
-
-      - name: Install Tauri CLI and the mobile CLI plugin
-        run: cargo install tauri-cli --version "^2.0.0-beta"
-
-      - name: Install mobile dependencies
-        run: |
-          cargo tauri android init
-
-      - name: Build Android APK (Debug)
-        run: |
-          cargo tauri android build --debug --verbose
-
-      - name: Build Android APK (Release)
-        if: env.HAS_ANDROID_KEYSTORE == 'true'
-        run: |
-          cargo tauri android build --release --verbose -- \
-            --signing-key $ANDROID_KEYSTORE_PATH \
-            --signing-key-pass ${{ secrets.ANDROID_KEYSTORE_PASSWORD }} \
-            --key-alias ${{ secrets.ANDROID_KEY_ALIAS }} \
-            --key-pass ${{ secrets.ANDROID_KEY_PASSWORD }}
-
-      - name: Upload Android debug APK to release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk
-          tag_name: ${{ github.ref_name }}
-          draft: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload Android release APK to release
-        if: env.HAS_ANDROID_KEYSTORE == 'true'
-        uses: softprops/action-gh-release@v1
-        with:
-          files: src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk
-          tag_name: ${{ github.ref_name }}
-          draft: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  publish-tauri-ios:
-    permissions:
-      contents: write
-    runs-on: macos-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-apple-ios, aarch64-apple-ios-sim, x86_64-apple-ios
-
-      - name: Install iOS dependencies
-        run: |
-          rustup target add aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios
-
-      - name: Install frontend dependencies
-        run: yarn install
-
-      - name: Install Tauri CLI and the mobile CLI plugin
-        run: cargo install tauri-cli --version "^2.0.0-beta"
-
-      - name: Install mobile dependencies
-        run: |
-          cargo tauri ios init
-
-      # Set up environment variable to check if Apple certificate exists
-      - name: Check Apple Certificate Secret
-        run: |
-          if [ -n "${{ secrets.APPLE_CERTIFICATE }}" ]; then
-            echo "HAS_APPLE_CERTIFICATE=true" >> $GITHUB_ENV
-          fi
-
-      # Import Apple certificate if available
-      - name: Import Apple Certificate
-        if: env.HAS_APPLE_CERTIFICATE == 'true'
-        run: |
-          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
-          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-
-          # Import certificate and provisioning profile from secrets
-          echo -n "${{ secrets.APPLE_CERTIFICATE }}" | base64 --decode -o $CERTIFICATE_PATH
-
-          # Create temporary keychain
-          security create-keychain -p "${{ secrets.APPLE_KEYCHAIN_PASSWORD }}" $KEYCHAIN_PATH
-          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
-          security unlock-keychain -p "${{ secrets.APPLE_KEYCHAIN_PASSWORD }}" $KEYCHAIN_PATH
-
-          # Import certificate to keychain
-          security import $CERTIFICATE_PATH -P "${{ secrets.APPLE_CERTIFICATE_PASSWORD }}" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
-          security list-keychain -d user -s $KEYCHAIN_PATH
-
-          # Apply provisioning profile
-          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          echo -n "${{ secrets.APPLE_PROVISIONING_PROFILE }}" | base64 --decode -o ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
-
-      # Build for simulator (always works without signing)
-      - name: Build iOS App (Simulator)
-        run: |
-          cargo tauri ios build --debug --target simulator
-
-      # Only attempt device builds if we have certificates
-      - name: Build iOS App (Device Debug)
-        if: env.HAS_APPLE_CERTIFICATE == 'true'
-        run: |
-          cargo tauri ios build --debug --target device
-
-      - name: Build iOS App (Device Release)
-        if: env.HAS_APPLE_CERTIFICATE == 'true'
-        run: |
-          cargo tauri ios build --release --target device
-
-      # Create a simulator IPA (this will work without signing)
-      - name: Package Simulator IPA
-        run: |
-          cd src-tauri/gen/ios
-          mkdir -p Payload
-          cp -r build/Debug-iphonesimulator/anime-management.app Payload/
-          zip -r anime-management-simulator.ipa Payload
-
-      # Only try to package device IPAs if we have signing
-      - name: Package Device IPA (Debug)
-        if: env.HAS_APPLE_CERTIFICATE == 'true'
-        run: |
-          cd src-tauri/gen/ios
-          mkdir -p Payload
-          cp -r build/Debug-iphoneos/anime-management.app Payload/
-          zip -r anime-management-debug.ipa Payload
-
-      - name: Package Device IPA (Release)
-        if: env.HAS_APPLE_CERTIFICATE == 'true'
-        run: |
-          cd src-tauri/gen/ios
-          mkdir -p Payload
-          cp -r build/Release-iphoneos/anime-management.app Payload/
-          zip -r anime-management-release.ipa Payload
-
-      # Always upload simulator IPA
-      - name: Upload iOS Simulator IPA to release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: src-tauri/gen/ios/anime-management-simulator.ipa
-          tag_name: ${{ github.ref_name }}
-          draft: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Only upload device IPAs if we have signing
-      - name: Upload iOS Debug Device IPA to release
-        if: env.HAS_APPLE_CERTIFICATE == 'true'
-        uses: softprops/action-gh-release@v1
-        with:
-          files: src-tauri/gen/ios/anime-management-debug.ipa
-          tag_name: ${{ github.ref_name }}
-          draft: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload iOS Release Device IPA to release
-        if: env.HAS_APPLE_CERTIFICATE == 'true'
-        uses: softprops/action-gh-release@v1
-        with:
-          files: src-tauri/gen/ios/anime-management-release.ipa
-          tag_name: ${{ github.ref_name }}
-          draft: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  # Build iOS
+  build-ios:
+    needs: prepare-release
+    uses: ./.github/workflows/build-ios.yml
+    with:
+      tag_name: ${{ needs.prepare-release.outputs.tag_name }}
+      release_name: ${{ needs.prepare-release.outputs.release_name }}
+      release_body: ${{ needs.prepare-release.outputs.release_body }}
+      draft: ${{ needs.prepare-release.outputs.draft }}
+      prerelease: ${{ needs.prepare-release.outputs.prerelease }}
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+      APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+      APPLE_KEYCHAIN_PASSWORD: ${{ secrets.APPLE_KEYCHAIN_PASSWORD }}
+      APPLE_PROVISIONING_PROFILE: ${{ secrets.APPLE_PROVISIONING_PROFILE }}

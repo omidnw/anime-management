@@ -1,0 +1,69 @@
+name: "Build macOS"
+
+on:
+  workflow_call:
+    inputs:
+      tag_name:
+        required: true
+        type: string
+      release_name:
+        required: true
+        type: string
+      release_body:
+        required: true
+        type: string
+      draft:
+        required: false
+        type: boolean
+        default: true
+      prerelease:
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      GITHUB_TOKEN:
+        required: true
+
+jobs:
+  build-macos:
+    permissions:
+      contents: write
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [x86_64-apple-darwin, aarch64-apple-darwin]
+        include:
+          - target: x86_64-apple-darwin
+            name: "Intel"
+          - target: aarch64-apple-darwin
+            name: "Apple Silicon"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-apple-darwin,aarch64-apple-darwin
+
+      - name: Install frontend dependencies
+        run: yarn install
+
+      - name: Build macOS App (${{ matrix.name }})
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ inputs.tag_name }}
+          releaseName: "${{ inputs.release_name }} (${{ matrix.name }})"
+          releaseBody: ${{ inputs.release_body }}
+          releaseDraft: ${{ inputs.draft }}
+          prerelease: ${{ inputs.prerelease }}
+          args: --target ${{ matrix.target }}

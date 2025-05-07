@@ -1,0 +1,167 @@
+name: "Build iOS"
+
+on:
+  workflow_call:
+    inputs:
+      tag_name:
+        required: true
+        type: string
+      release_name:
+        required: true
+        type: string
+      release_body:
+        required: true
+        type: string
+      draft:
+        required: false
+        type: boolean
+        default: true
+      prerelease:
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      GITHUB_TOKEN:
+        required: true
+      APPLE_CERTIFICATE:
+        required: false
+      APPLE_CERTIFICATE_PASSWORD:
+        required: false
+      APPLE_KEYCHAIN_PASSWORD:
+        required: false
+      APPLE_PROVISIONING_PROFILE:
+        required: false
+
+jobs:
+  build-ios:
+    permissions:
+      contents: write
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios, aarch64-apple-ios-sim, x86_64-apple-ios
+
+      - name: Install iOS dependencies
+        run: |
+          rustup target add aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios
+
+      - name: Install frontend dependencies
+        run: yarn install
+
+      - name: Install Tauri CLI and the mobile CLI plugin
+        run: cargo install tauri-cli --version "^2.0.0-beta"
+
+      - name: Install mobile dependencies
+        run: |
+          cargo tauri ios init
+
+      # Set up environment variable to check if Apple certificate exists
+      - name: Check Apple Certificate Secret
+        run: |
+          if [ -n "${{ secrets.APPLE_CERTIFICATE }}" ]; then
+            echo "HAS_APPLE_CERTIFICATE=true" >> $GITHUB_ENV
+          fi
+
+      # Import Apple certificate if available
+      - name: Import Apple Certificate
+        if: env.HAS_APPLE_CERTIFICATE == 'true'
+        run: |
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+          # Import certificate and provisioning profile from secrets
+          echo -n "${{ secrets.APPLE_CERTIFICATE }}" | base64 --decode -o $CERTIFICATE_PATH
+
+          # Create temporary keychain
+          security create-keychain -p "${{ secrets.APPLE_KEYCHAIN_PASSWORD }}" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "${{ secrets.APPLE_KEYCHAIN_PASSWORD }}" $KEYCHAIN_PATH
+
+          # Import certificate to keychain
+          security import $CERTIFICATE_PATH -P "${{ secrets.APPLE_CERTIFICATE_PASSWORD }}" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+
+          # Apply provisioning profile
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          echo -n "${{ secrets.APPLE_PROVISIONING_PROFILE }}" | base64 --decode -o ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
+
+      # Build for simulator (always works without signing)
+      - name: Build iOS App (Simulator)
+        run: |
+          cargo tauri ios build --debug --target simulator
+
+      # Only attempt device builds if we have certificates
+      - name: Build iOS App (Device Debug)
+        if: env.HAS_APPLE_CERTIFICATE == 'true'
+        run: |
+          cargo tauri ios build --debug --target device
+
+      - name: Build iOS App (Device Release)
+        if: env.HAS_APPLE_CERTIFICATE == 'true'
+        run: |
+          cargo tauri ios build --release --target device
+
+      # Create a simulator IPA (this will work without signing)
+      - name: Package Simulator IPA
+        run: |
+          cd src-tauri/gen/ios
+          mkdir -p Payload
+          cp -r build/Debug-iphonesimulator/anime-management.app Payload/
+          zip -r anime-management-simulator.ipa Payload
+
+      # Only try to package device IPAs if we have signing
+      - name: Package Device IPA (Debug)
+        if: env.HAS_APPLE_CERTIFICATE == 'true'
+        run: |
+          cd src-tauri/gen/ios
+          mkdir -p Payload
+          cp -r build/Debug-iphoneos/anime-management.app Payload/
+          zip -r anime-management-debug.ipa Payload
+
+      - name: Package Device IPA (Release)
+        if: env.HAS_APPLE_CERTIFICATE == 'true'
+        run: |
+          cd src-tauri/gen/ios
+          mkdir -p Payload
+          cp -r build/Release-iphoneos/anime-management.app Payload/
+          zip -r anime-management-release.ipa Payload
+
+      # Upload files to release
+      - name: Upload iOS Simulator IPA to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: src-tauri/gen/ios/anime-management-simulator.ipa
+          tag_name: ${{ inputs.tag_name }}
+          draft: ${{ inputs.draft }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload iOS Debug Device IPA to release
+        if: env.HAS_APPLE_CERTIFICATE == 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: src-tauri/gen/ios/anime-management-debug.ipa
+          tag_name: ${{ inputs.tag_name }}
+          draft: ${{ inputs.draft }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload iOS Release Device IPA to release
+        if: env.HAS_APPLE_CERTIFICATE == 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: src-tauri/gen/ios/anime-management-release.ipa
+          tag_name: ${{ inputs.tag_name }}
+          draft: ${{ inputs.draft }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,56 @@
+name: "Build Windows"
+
+on:
+  workflow_call:
+    inputs:
+      tag_name:
+        required: true
+        type: string
+      release_name:
+        required: true
+        type: string
+      release_body:
+        required: true
+        type: string
+      draft:
+        required: false
+        type: boolean
+        default: true
+      prerelease:
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      GITHUB_TOKEN:
+        required: true
+
+jobs:
+  build-windows:
+    permissions:
+      contents: write
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install frontend dependencies
+        run: yarn install
+
+      - name: Build Windows App
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ inputs.tag_name }}
+          releaseName: ${{ inputs.release_name }}
+          releaseBody: ${{ inputs.release_body }}
+          releaseDraft: ${{ inputs.draft }}
+          prerelease: ${{ inputs.prerelease }}
